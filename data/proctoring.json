@@ -1,0 +1,166 @@
+{
+  "events": [
+    {
+      "id": "evt-001",
+      "attemptId": "attempt-002",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_HIDDEN",
+      "occurredAt": "2026-11-13T07:18:12.000Z",
+      "receivedAt": "2026-11-13T07:18:13.000Z",
+      "metadata": {
+        "visibilityState": "hidden"
+      }
+    },
+    {
+      "id": "evt-002",
+      "attemptId": "attempt-002",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_VISIBLE",
+      "occurredAt": "2026-11-13T07:18:20.000Z",
+      "receivedAt": "2026-11-13T07:18:21.000Z",
+      "metadata": {
+        "visibilityState": "visible"
+      }
+    },
+    {
+      "id": "evt-003",
+      "attemptId": "attempt-002",
+      "examId": "exam-published-001",
+      "type": "WINDOW_BLUR",
+      "occurredAt": "2026-11-13T07:25:05.000Z",
+      "receivedAt": "2026-11-13T07:25:06.000Z",
+      "metadata": {
+        "source": "window"
+      }
+    },
+    {
+      "id": "evt-004",
+      "attemptId": "attempt-002",
+      "examId": "exam-published-001",
+      "type": "WINDOW_FOCUS",
+      "occurredAt": "2026-11-13T07:25:09.000Z",
+      "receivedAt": "2026-11-13T07:25:10.000Z",
+      "metadata": {
+        "source": "window"
+      }
+    },
+    {
+      "id": "evt-101",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_HIDDEN",
+      "occurredAt": "2026-11-13T14:05:00.000Z",
+      "receivedAt": "2026-11-13T14:05:01.000Z",
+      "metadata": {
+        "visibilityState": "hidden"
+      }
+    },
+    {
+      "id": "evt-102",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_VISIBLE",
+      "occurredAt": "2026-11-13T14:05:08.000Z",
+      "receivedAt": "2026-11-13T14:05:09.000Z",
+      "metadata": {
+        "visibilityState": "visible"
+      }
+    },
+    {
+      "id": "evt-103",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "WINDOW_BLUR",
+      "occurredAt": "2026-11-13T14:12:30.000Z",
+      "receivedAt": "2026-11-13T14:12:31.000Z",
+      "metadata": {
+        "source": "window"
+      }
+    },
+    {
+      "id": "evt-104",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "WINDOW_FOCUS",
+      "occurredAt": "2026-11-13T14:12:40.000Z",
+      "receivedAt": "2026-11-13T14:12:41.000Z",
+      "metadata": {
+        "source": "window"
+      }
+    },
+    {
+      "id": "evt-105",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_HIDDEN",
+      "occurredAt": "2026-11-13T14:20:10.000Z",
+      "receivedAt": "2026-11-13T14:20:11.000Z",
+      "metadata": {
+        "visibilityState": "hidden"
+      }
+    },
+    {
+      "id": "evt-106",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "VISIBILITY_VISIBLE",
+      "occurredAt": "2026-11-13T14:20:25.000Z",
+      "receivedAt": "2026-11-13T14:20:26.000Z",
+      "metadata": {
+        "visibilityState": "visible"
+      }
+    },
+    {
+      "id": "evt-107",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "FULLSCREEN_EXIT",
+      "occurredAt": "2026-11-13T14:28:00.000Z",
+      "receivedAt": "2026-11-13T14:28:01.000Z",
+      "metadata": {
+        "fullscreen": false
+      }
+    },
+    {
+      "id": "evt-108",
+      "attemptId": "attempt-003",
+      "examId": "exam-published-001",
+      "type": "CAMERA_TRACK_ENDED",
+      "occurredAt": "2026-11-13T14:33:00.000Z",
+      "receivedAt": "2026-11-13T14:33:01.000Z",
+      "metadata": {
+        "status": "ended",
+        "reason": "track ended"
+      }
+    },
+    {
+      "id": "1716366d-8f81-4dac-b3c5-34401874ac41",
+      "attemptId": "23ee05da-d371-4263-9273-f7d786f471a1",
+      "examId": "exam-published-001",
+      "type": "CAMERA_STATUS",
+      "occurredAt": "2026-11-13T20:37:41.304Z",
+      "receivedAt": "2026-11-13T20:37:44.477Z",
+      "metadata": {
+        "status": "monitoring_enabled",
+        "note": "Camera monitoring enabled when available."
+      }
+    },
+    {
+      "id": "11e53bd2-f1a2-490b-8899-63045a6793e8",
+      "attemptId": "23ee05da-d371-4263-9273-f7d786f471a1",
+      "examId": "exam-published-001",
+      "type": "CAMERA_SNAPSHOT",
+      "occurredAt": "2026-11-13T20:37:42.830Z",
+      "receivedAt": "2026-11-13T20:37:44.477Z",
+      "metadata": {
+        "reason": "session_start",
+        "source": "client_best_effort",
+        "dataUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAC0APADASIAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAAAAECAwQG/8QAJBABAQABAgcBAAMBAAAAAAAAAAERAhIDEyExQVFhIjNxgZH/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAWEQEBAQAAAAAAAAAAAAAAAAAAEQH/2gAMAwEAAhEDEQA/APhgAAAAAAAAAAAAUAAVVRQFTyqKqooEDJ9BVSLAFZz/AMUFyf6iBXABWQAAAAAAAAABQAi4IqKYFwYAwBkFDKy5AXBFx0BFXBgVJ3DBgAEoOACsgAAAAAAAAKAsRYitLEiwFCFFJ1uF2MabjVlucWCHLNiziytTXKipNMy1tZ/Nuc3q1p2zTiAbUw0AyjfxLAYSt1mg84DTIAAAAAAAACwBcEiakVqT6sn1zyu6+wrrJ9XH1y3U30hXTZc912fIxOJqWcW/Aa5fyJy56OdfUOd8FXZjrhqWzwzzp6XmzHZBd3uU3z+k5s9Jdem+Aa3TPdc58uedFT8+wrpc+0ZmfHVbqxeoOADTIAAAAAAAAsRYDUZ1d2ozq7oqAKgAAAAAAABlcoAuUAHTg39Y9u2rEmb0jzabt1S+l167rvz0kWsgKgAAAAAAAAsRYK1GdXdqM6u6CAKgAAAAAAAAAAAAAAAAAAAAAAAA1GVgrUZ1d2p1ZvcEAEAAAAAAAAAAAAAAAAAAAAAAAAFRQVm92mRQAQAAAAAAAAAAAAAAAAAAAAAAAAVAFiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwEXwsiyQVgAQAAAAAAAAF0zOrq7aeHPMBwAAAAAAAAAAAAAAWICtTvhWZcalyDPkAQAAAAAAABvhfyR3x9efRca49H1NXHlAVAAAAAAAAAAAAAAFncAEAAAAAAAAABZ3jvnIJq4//2Q==",
+        "mimeType": "image/jpeg",
+        "width": 240,
+        "height": 180,
+        "capturedAt": "2026-11-13T20:37:42.830Z"
+      }
+    }
+  ]
+}

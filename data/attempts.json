@@ -1,0 +1,432 @@
+[
+  {
+    "id": "attempt-001",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Alice Nguyen"
+    },
+    "consentAcceptedAt": "2026-11-12T08:00:10.000Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-12T08:00:15.000Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-12T08:00:20.000Z",
+    "deadlineAt": "2026-11-12T08:45:20.000Z",
+    "submittedAt": "2026-11-12T08:25:10.000Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1b"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2b"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": "o3b"
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "A memorable learning experience for me was preparing for a group presentation in high school. At first, I was nervous about speaking in front of others, but working with my teammates helped me practice and organize my ideas. I learned the importance of collaboration, preparation, and clear communication. This experience taught me that confidence grows when I take small steps and learn from feedback."
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 5,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-12T08:25:10.500Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1b",
+          "correctOptionId": "o1b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2b",
+          "correctOptionId": "o2b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": "o3b",
+          "correctOptionId": "o3b",
+          "isCorrect": true,
+          "earnedPoints": 1,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "FINALIZED",
+    "overallGradingStatus": "ESSAY_GRADED",
+    "essayGradings": [
+      {
+        "attemptId": "attempt-001",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": {
+          "status": "success",
+          "criteria": [
+            {
+              "criterionId": "c1",
+              "score": 4,
+              "comment": "Directly addresses the prompt with a clear example."
+            },
+            {
+              "criterionId": "c2",
+              "score": 3,
+              "comment": "Well structured and easy to follow."
+            },
+            {
+              "criterionId": "c3",
+              "score": 2,
+              "comment": "Language is clear with minor room for variety."
+            }
+          ],
+          "suggestedTotal": 9,
+          "overallComment": "A clear and relevant response with strong organization.",
+          "strengths": [
+            "Relevant personal example",
+            "Clear reflection on learning"
+          ],
+          "improvements": [
+            "Could add more specific details about the outcome"
+          ],
+          "generatedAt": "2026-11-12T09:00:00.000Z",
+          "model": "sample-seed"
+        },
+        "teacherEvaluation": {
+          "criteria": [
+            {
+              "criterionId": "c1",
+              "score": 4,
+              "comment": "Relevant and specific example."
+            },
+            {
+              "criterionId": "c2",
+              "score": 3,
+              "comment": "Well organized."
+            },
+            {
+              "criterionId": "c3",
+              "score": 2,
+              "comment": "Generally clear language."
+            }
+          ],
+          "totalScore": 9,
+          "overallComment": "Strong response with clear reflection. Good work.",
+          "status": "FINALIZED",
+          "updatedAt": "2026-11-12T09:20:00.000Z",
+          "finalizedAt": "2026-11-12T09:20:00.000Z"
+        }
+      }
+    ],
+    "essayResult": {
+      "earned": 9,
+      "possible": 10,
+      "finalizedCount": 1,
+      "totalCount": 1
+    },
+    "resultPublishedAt": "2026-11-12T09:30:00.000Z",
+    "createdAt": "2026-11-12T08:00:20.000Z",
+    "updatedAt": "2026-11-12T09:30:00.000Z"
+  },
+  {
+    "id": "attempt-002",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bob Tran"
+    },
+    "consentAcceptedAt": "2026-11-13T07:10:00.000Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-13T07:10:10.000Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-13T07:10:20.000Z",
+    "deadlineAt": "2026-11-13T07:55:20.000Z",
+    "submittedAt": "2026-11-13T07:40:00.000Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1b"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2a"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": "o3b"
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "I remember learning to ride a bicycle. It was difficult at first and I fell many times, but my father encouraged me to keep trying. After practicing, I finally succeeded. It taught me to be patient and not give up easily."
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 3,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-13T07:40:00.400Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1b",
+          "correctOptionId": "o1b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2a",
+          "correctOptionId": "o2b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": "o3b",
+          "correctOptionId": "o3b",
+          "isCorrect": true,
+          "earnedPoints": 1,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "IN_REVIEW",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "attempt-002",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": {
+          "status": "success",
+          "criteria": [
+            {
+              "criterionId": "c1",
+              "score": 3,
+              "comment": "Relevant example, but could include more detail."
+            },
+            {
+              "criterionId": "c2",
+              "score": 2,
+              "comment": "Clear sequence, though transitions are simple."
+            },
+            {
+              "criterionId": "c3",
+              "score": 2,
+              "comment": "Understandable language with minor issues."
+            }
+          ],
+          "suggestedTotal": 7,
+          "overallComment": "A relevant response that would benefit from more detail and elaboration.",
+          "strengths": [
+            "Clear lesson learned",
+            "Easy to understand"
+          ],
+          "improvements": [
+            "Add more specific details",
+            "Expand reflection"
+          ],
+          "generatedAt": "2026-11-13T08:00:00.000Z",
+          "model": "sample-seed"
+        },
+        "teacherEvaluation": {
+          "criteria": [
+            {
+              "criterionId": "c1",
+              "score": 3,
+              "comment": "On topic but brief."
+            },
+            {
+              "criterionId": "c2",
+              "score": 2,
+              "comment": "Basic organization."
+            },
+            {
+              "criterionId": "c3",
+              "score": 1,
+              "comment": "Simple language; needs more development."
+            }
+          ],
+          "totalScore": 6,
+          "overallComment": "Good start; consider adding more detail before finalizing.",
+          "status": "DRAFT",
+          "updatedAt": "2026-11-13T08:15:00.000Z"
+        }
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-13T07:10:20.000Z",
+    "updatedAt": "2026-11-13T08:15:00.000Z"
+  },
+  {
+    "id": "attempt-003",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Carol Le"
+    },
+    "consentAcceptedAt": "2026-11-13T14:00:00.000Z",
+    "cameraCheck": {
+      "status": "skipped",
+      "note": "Camera check skipped.",
+      "checkedAt": "2026-11-13T14:00:20.000Z"
+    },
+    "status": "AUTO_SUBMITTED",
+    "submitReason": "TIMEOUT",
+    "startedAt": "2026-11-13T14:00:30.000Z",
+    "deadlineAt": "2026-11-13T14:45:30.000Z",
+    "submittedAt": "2026-11-13T14:45:30.500Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1a"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2b"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": ""
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 2,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-13T14:45:30.600Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1a",
+          "correctOptionId": "o1b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2b",
+          "correctOptionId": "o2b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": null,
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "attempt-003",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-13T14:00:30.000Z",
+    "updatedAt": "2026-11-13T14:45:30.600Z"
+  },
+  {
+    "id": "23ee05da-d371-4263-9273-f7d786f471a1",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-13T20:37:38.402Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-13T20:37:38.402Z"
+    },
+    "status": "IN_PROGRESS",
+    "submitReason": null,
+    "startedAt": "2026-11-13T20:37:38.402Z",
+    "deadlineAt": "2026-11-13T21:22:38.402Z",
+    "submittedAt": null,
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": ""
+      }
+    ],
+    "mcqResult": null,
+    "essayGradingStatus": null,
+    "overallGradingStatus": "NOT_SUBMITTED",
+    "essayResult": null,
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-13T20:37:38.402Z",
+    "updatedAt": "2026-11-13T20:38:00.056Z"
+  }
+]

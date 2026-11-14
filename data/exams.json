@@ -1,0 +1,158 @@
+[
+  {
+    "id": "exam-draft-001",
+    "ownerId": "teacher-1",
+    "title": "Draft: Algebra Basics",
+    "description": "A short draft exam for testing the authoring and publish flow.",
+    "durationMinutes": 30,
+    "openAt": null,
+    "closeAt": null,
+    "status": "DRAFT",
+    "joinCode": null,
+    "publishedAt": null,
+    "questions": [
+      {
+        "id": "dq-mcq-1",
+        "examId": "exam-draft-001",
+        "type": "MCQ",
+        "prompt": "What is 2 + 2?",
+        "points": 1,
+        "order": 1,
+        "options": [
+          { "id": "dq1-o1", "content": "3", "order": 1 },
+          { "id": "dq1-o2", "content": "4", "order": 2 },
+          { "id": "dq1-o3", "content": "5", "order": 3 }
+        ],
+        "correctOptionId": "dq1-o2",
+        "createdAt": "2026-11-10T09:00:00.000Z",
+        "updatedAt": "2026-11-10T09:00:00.000Z"
+      },
+      {
+        "id": "dq-essay-1",
+        "examId": "exam-draft-001",
+        "type": "ESSAY",
+        "prompt": "Explain how to solve a simple linear equation (for example, 2x + 3 = 7).",
+        "points": 5,
+        "order": 2,
+        "rubricCriteria": [
+          {
+            "id": "dq1-c1",
+            "name": "Accuracy",
+            "description": "Correct steps and final answer.",
+            "maxScore": 3,
+            "order": 1
+          },
+          {
+            "id": "dq1-c2",
+            "name": "Clarity",
+            "description": "Explanation is clear and well organized.",
+            "maxScore": 2,
+            "order": 2
+          }
+        ],
+        "createdAt": "2026-11-10T09:05:00.000Z",
+        "updatedAt": "2026-11-10T09:05:00.000Z"
+      }
+    ],
+    "createdAt": "2026-11-10T08:50:00.000Z",
+    "updatedAt": "2026-11-10T09:05:00.000Z"
+  },
+  {
+    "id": "exam-published-001",
+    "ownerId": "teacher-1",
+    "title": "English Assessment (Sample)",
+    "description": "Published sample exam with multiple-choice and essay questions for end-to-end testing.",
+    "durationMinutes": 45,
+    "openAt": "2026-01-01T00:00:00.000Z",
+    "closeAt": "2027-12-31T23:59:59.000Z",
+    "status": "PUBLISHED",
+    "joinCode": "JOINME01",
+    "publishedAt": "2026-11-10T10:00:00.000Z",
+    "questions": [
+      {
+        "id": "q-mcq-1",
+        "examId": "exam-published-001",
+        "type": "MCQ",
+        "prompt": "Which word is a synonym of \"happy\"?",
+        "points": 2,
+        "order": 1,
+        "options": [
+          { "id": "o1a", "content": "Sad", "order": 1 },
+          { "id": "o1b", "content": "Joyful", "order": 2 },
+          { "id": "o1c", "content": "Angry", "order": 3 },
+          { "id": "o1d", "content": "Tired", "order": 4 }
+        ],
+        "correctOptionId": "o1b",
+        "createdAt": "2026-11-10T09:20:00.000Z",
+        "updatedAt": "2026-11-10T09:20:00.000Z"
+      },
+      {
+        "id": "q-mcq-2",
+        "examId": "exam-published-001",
+        "type": "MCQ",
+        "prompt": "Choose the correct sentence.",
+        "points": 2,
+        "order": 2,
+        "options": [
+          { "id": "o2a", "content": "She go to school every day.", "order": 1 },
+          { "id": "o2b", "content": "She goes to school every day.", "order": 2 },
+          { "id": "o2c", "content": "She going to school every day.", "order": 3 }
+        ],
+        "correctOptionId": "o2b",
+        "createdAt": "2026-11-10T09:22:00.000Z",
+        "updatedAt": "2026-11-10T09:22:00.000Z"
+      },
+      {
+        "id": "q-mcq-3",
+        "examId": "exam-published-001",
+        "type": "MCQ",
+        "prompt": "What is the past tense of \"write\"?",
+        "points": 1,
+        "order": 3,
+        "options": [
+          { "id": "o3a", "content": "writed", "order": 1 },
+          { "id": "o3b", "content": "wrote", "order": 2 },
+          { "id": "o3c", "content": "written", "order": 3 }
+        ],
+        "correctOptionId": "o3b",
+        "createdAt": "2026-11-10T09:24:00.000Z",
+        "updatedAt": "2026-11-10T09:24:00.000Z"
+      },
+      {
+        "id": "q-essay-1",
+        "examId": "exam-published-001",
+        "type": "ESSAY",
+        "prompt": "Describe a memorable learning experience and explain what it taught you.",
+        "points": 10,
+        "order": 4,
+        "rubricCriteria": [
+          {
+            "id": "c1",
+            "name": "Content & relevance",
+            "description": "Addresses the prompt with relevant details and examples.",
+            "maxScore": 4,
+            "order": 1
+          },
+          {
+            "id": "c2",
+            "name": "Organization & clarity",
+            "description": "Ideas are well organized and easy to follow.",
+            "maxScore": 3,
+            "order": 2
+          },
+          {
+            "id": "c3",
+            "name": "Language use",
+            "description": "Uses clear and mostly accurate language.",
+            "maxScore": 3,
+            "order": 3
+          }
+        ],
+        "createdAt": "2026-11-10T09:30:00.000Z",
+        "updatedAt": "2026-11-10T09:30:00.000Z"
+      }
+    ],
+    "createdAt": "2026-11-10T09:10:00.000Z",
+    "updatedAt": "2026-11-10T10:00:00.000Z"
+  }
+]
