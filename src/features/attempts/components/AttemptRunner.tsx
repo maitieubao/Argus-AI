@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useProctoringEvents } from "@/features/proctoring/client";
+import { useProctoringEvents, type DemoPostureMode } from "@/features/proctoring/client";
 
 type AttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "AUTO_SUBMITTED";
 
@@ -137,8 +137,10 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
   const isSubmitted = view ? view.attempt.status !== "IN_PROGRESS" : false;
   const warningLevel = remainingMs <= 60_000 ? "critical" : remainingMs <= 5 * 60_000 ? "warn" : "normal";
 
-  useProctoringEvents({
+  const proctoring = useProctoringEvents({
     attemptId,
+    examId: view?.exam.id,
+    candidateName: view?.attempt.candidate.fullName,
     active: !!view && !isSubmitted,
     camera: { enabled: cameraMonitoring, getVideoEl: () => proctorVideoRef.current },
   });
@@ -598,6 +600,84 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
           <button type="button" className="primary-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => setShowConfirm(true)} disabled={submitting}>
             Submit
           </button>
+
+          <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border)", fontSize: 13 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <strong>AI Proctor</strong>
+              <span className="pill" style={{ fontSize: 11 }}>
+                {cameraMonitoring ? "Camera Active" : "Browser Signals"}
+              </span>
+            </div>
+            {proctoring.liveSnapshot ? (
+              <div className="muted" style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 6 }}>
+                <div>
+                  Face: <strong>{proctoring.liveSnapshot.cameraObstructed ? "Obstructed" : proctoring.liveSnapshot.faceCount >= 2 ? `Multiple (${proctoring.liveSnapshot.faceCount})` : proctoring.liveSnapshot.faceVisible ? "Visible" : "Missing"}</strong>
+                </div>
+                <div>
+                  Gaze: <strong>{proctoring.liveSnapshot.eyeGazeDirection}</strong> · Head: <strong>{proctoring.liveSnapshot.headOrientation}</strong>
+                </div>
+                <div>
+                  Hands (L/R): <strong>{proctoring.liveSnapshot.leftHandVisible ? "OK" : "—"} / {proctoring.liveSnapshot.rightHandVisible ? "OK" : "—"}</strong>
+                </div>
+              </div>
+            ) : null}
+            {proctoring.lastDetectedBanner ? (
+              <div style={{ fontSize: 12, marginBottom: 6, padding: "4px 6px", background: "var(--bg-soft)", border: "1px solid var(--border)" }}>
+                Last signal: <strong>{proctoring.lastDetectedBanner}</strong>
+              </div>
+            ) : null}
+            <details style={{ marginTop: 6 }}>
+              <summary className="muted" style={{ cursor: "pointer", fontSize: 12 }}>
+                AI Proctor Demo Controls
+              </summary>
+              <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                <label htmlFor="proctor-posture-select" style={{ fontSize: 11 }} className="muted">
+                  Vision Posture Mode
+                </label>
+                <select
+                  id="proctor-posture-select"
+                  value={proctoring.postureMode}
+                  onChange={(e) => proctoring.setPostureMode(e.target.value as DemoPostureMode)}
+                  style={{ fontSize: 12, padding: "4px 6px" }}
+                >
+                  <option value="AUTO_WEBCAM">Auto Webcam (Normal)</option>
+                  <option value="FACE_MISSING">Face Missing (≥5s)</option>
+                  <option value="MULTIPLE_FACES">Multiple Faces (≥2s)</option>
+                  <option value="CAMERA_OBSTRUCTED">Camera Obstructed (≥5s)</option>
+                  <option value="LOOKING_AWAY">Eye Gaze Looking Away (≥5s)</option>
+                  <option value="HEAD_TURNED">Head Turned 38° (≥5s)</option>
+                  <option value="HANDS_MISSING">Hand Missing (≥10s)</option>
+                  <option value="PHONE_DETECTED">Phone Detected (≥3s)</option>
+                </select>
+                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="secondary-btn small-btn"
+                    style={{ fontSize: 11, padding: "4px 8px" }}
+                    onClick={() => proctoring.fastForwardVisionMs(3000)}
+                  >
+                    +3s Tick
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-btn small-btn"
+                    style={{ fontSize: 11, padding: "4px 8px" }}
+                    onClick={() => proctoring.fastForwardVisionMs(5500)}
+                  >
+                    +5.5s Tick
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-btn small-btn"
+                    style={{ fontSize: 11, padding: "4px 8px" }}
+                    onClick={() => proctoring.fastForwardVisionMs(10500)}
+                  >
+                    +10.5s Tick
+                  </button>
+                </div>
+              </div>
+            </details>
+          </div>
         </aside>
 
         <div className="card question-section take-panel">

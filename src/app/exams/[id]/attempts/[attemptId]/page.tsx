@@ -5,6 +5,7 @@ import { getExamById, formatDateTime } from "@/features/exams/store";
 import { getAttemptById } from "@/features/attempts/store";
 import { getProctoringSummaryByAttempt } from "@/features/proctoring/service";
 import { getEventTypeLabel, isKnownEventType } from "@/features/proctoring/domain";
+import ProctorEventReviewControls from "./ProctorEventReviewControls";
 
 export const metadata = {
   title: "Attempt proctoring details | Argus AI",
@@ -36,6 +37,11 @@ function fmtEventTime(iso: string) {
   });
 }
 
+function fmtDurationSeconds(ms?: unknown): string {
+  if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) return "—";
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
 function getSnapshotDataUrl(meta: Record<string, unknown> | null): string | null {
   if (!meta) return null;
   const dataUrl = meta.dataUrl;
@@ -45,15 +51,31 @@ function getSnapshotDataUrl(meta: Record<string, unknown> | null): string | null
 function renderMetadata(meta: Record<string, unknown> | null) {
   if (!meta) return "—";
   const parts: string[] = [];
+  if (typeof meta.durationMs === "number") {
+    parts.push(`duration: ${(meta.durationMs / 1000).toFixed(1)}s`);
+  }
+  if (typeof meta.confidence === "number") {
+    parts.push(`confidence: ${Math.round(meta.confidence * 100)}%`);
+  }
   for (const [k, v] of Object.entries(meta)) {
-    if (k === "dataUrl") continue;
+    if (
+      k === "dataUrl" ||
+      k === "durationMs" ||
+      k === "confidence" ||
+      k === "startTimestamp" ||
+      k === "endTimestamp" ||
+      k === "totalMonitoringDurationMs" ||
+      k === "bothHandsVisibleDurationMs"
+    ) {
+      continue;
+    }
     if (v == null || v === "") continue;
     if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
       parts.push(`${k}: ${String(v)}`);
     }
   }
   if (getSnapshotDataUrl(meta)) {
-    parts.push("snapshot attached");
+    parts.push("evidence snapshot attached");
   }
   return parts.length ? parts.join(" · ") : "—";
 }
@@ -77,9 +99,8 @@ export default async function ExamAttemptProctoringPage({
   const summary = summaryResult.ok ? summaryResult.data : null;
 
   const countsEntries = summary ? Object.entries(summary.countsByType).sort((a, b) => b[1] - a[1]) : [];
-  const snapshots = (summary?.events || []).filter(
-    (e) => e.type === "CAMERA_SNAPSHOT" && getSnapshotDataUrl(e.metadata) !== null,
-  );
+  const snapshots = (summary?.events || []).filter((e) => getSnapshotDataUrl(e.metadata) !== null);
+  const live = summary?.liveTelemetry ?? null;
 
   return (
     <div className="app-shell">
@@ -108,21 +129,76 @@ export default async function ExamAttemptProctoringPage({
           </div>
         ) : (
           <>
+            {/* Phase 5.1: Live Monitoring Status Card */}
+            <div className="card question-section">
+              <div className="question-section-head" style={{ marginBottom: 8 }}>
+                <div>
+                  <h2>Live AI Monitoring Status</h2>
+                  <p className="muted" style={{ fontSize: 13 }}>
+                    Real-time face, eye gaze, head pose, and hand visibility telemetry
+                  </p>
+                </div>
+                <span className={`risk-badge ${levelClass(summary.warningLevel)}`}>{summary.warningLabel}</span>
+              </div>
+              <div className="exam-info-block" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
+                <div>
+                  Webcam status: <strong>{attempt.cameraCheck?.status ?? "not_checked"}</strong>
+                </div>
+                <div>
+                  Face visibility:{" "}
+                  <strong>
+                    {!live
+                      ? "—"
+                      : live.cameraObstructed
+                        ? "Obstructed"
+                        : live.faceCount >= 2
+                          ? `Multiple faces (${live.faceCount})`
+                          : live.faceVisible
+                            ? "Visible (1 face)"
+                            : "Missing"}
+                  </strong>
+                </div>
+                <div>
+                  Eye gaze: <strong>{live ? live.eyeGazeDirection : "—"}</strong>
+                </div>
+                <div>
+                  Head pose:{" "}
+                  <strong>
+                    {live ? `${live.headOrientation} (yaw ${live.yaw}°, pitch ${live.pitch}°)` : "—"}
+                  </strong>
+                </div>
+                <div>
+                  Left hand: <strong>{live ? (live.leftHandVisible ? "Visible" : "Missing") : "—"}</strong>
+                </div>
+                <div>
+                  Right hand: <strong>{live ? (live.rightHandVisible ? "Visible" : "Missing") : "—"}</strong>
+                </div>
+                <div>
+                  Monitored time: <strong>{live ? fmtDurationSeconds(live.totalMonitoringDurationMs) : "—"}</strong>
+                </div>
+                <div>
+                  Hands visible time: <strong>{live ? fmtDurationSeconds(live.bothHandsVisibleDurationMs) : "—"}</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Card */}
             <div className="card question-section">
               <div className="question-section-head" style={{ marginBottom: 8 }}>
                 <div>
                   <h2>Summary</h2>
                 </div>
-                <span className={`risk-badge ${levelClass(summary.warningLevel)}`}>{summary.warningLabel}</span>
               </div>
               <div className="exam-info-block" style={{ marginBottom: 10 }}>
-                <div>Total events: <strong>{summary.totalEvents}</strong></div>
+                <div>
+                  Total events: <strong>{summary.totalEvents}</strong> · Reviewed: <strong>{summary.reviewedCount}</strong> · Unresolved: <strong>{summary.unresolvedCount}</strong>
+                </div>
                 <div>
                   First event: <strong>{summary.firstEventAt ? fmtEventTime(summary.firstEventAt) : "—"}</strong> · Last event: <strong>{summary.lastEventAt ? fmtEventTime(summary.lastEventAt) : "—"}</strong>
                 </div>
               </div>
               <div>
-                <div style={{ fontWeight: 600, marginBottom: 6, color: "var(--nb-black)" }}>Reasons</div>
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>Reasons</div>
                 {summary.warningReasons.length ? (
                   <ul style={{ marginLeft: 18, fontSize: 14, lineHeight: 1.5 }}>
                     {summary.warningReasons.map((r, i) => (
@@ -170,11 +246,11 @@ export default async function ExamAttemptProctoringPage({
             <div className="card question-section">
               <div className="question-section-head" style={{ marginBottom: 8 }}>
                 <div>
-                  <h2>Camera snapshots</h2>
+                  <h2>Evidence & Camera Snapshots</h2>
                 </div>
               </div>
               {snapshots.length === 0 ? (
-                <div className="muted">No camera snapshots recorded.</div>
+                <div className="muted">No evidence snapshots recorded.</div>
               ) : (
                 <div className="snapshot-grid">
                   {snapshots.map((e) => {
@@ -183,8 +259,11 @@ export default async function ExamAttemptProctoringPage({
                     return (
                       <div key={e.id} className="snapshot-item">
                         {/* eslint-disable-next-line @next/next/no-img-element -- snapshot is a stored data URL */}
-                        <img src={dataUrl} alt="Camera snapshot" />
-                        <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                        <img src={dataUrl} alt={`Evidence for ${e.type}`} />
+                        <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>
+                          <code>{e.type}</code>
+                        </div>
+                        <div className="muted" style={{ fontSize: 12 }}>
                           {fmtEventTime(e.occurredAt)}
                         </div>
                       </div>
@@ -201,7 +280,7 @@ export default async function ExamAttemptProctoringPage({
             <div className="card question-section">
               <div className="question-section-head" style={{ marginBottom: 8 }}>
                 <div>
-                  <h2>Event timeline</h2>
+                  <h2>Event timeline & Human Review</h2>
                 </div>
               </div>
               {summary.events.length === 0 ? (
@@ -214,7 +293,8 @@ export default async function ExamAttemptProctoringPage({
                         <th>Time</th>
                         <th>Type</th>
                         <th>Description</th>
-                        <th>Metadata</th>
+                        <th>Metadata & Duration</th>
+                        <th>Review Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -225,6 +305,14 @@ export default async function ExamAttemptProctoringPage({
                           <td data-label="Description">{getEventTypeLabel(e.type)}</td>
                           <td data-label="Metadata" className="muted" style={{ fontSize: 13 }}>
                             {renderMetadata(e.metadata as Record<string, unknown> | null)}
+                          </td>
+                          <td data-label="Review Status">
+                            <ProctorEventReviewControls
+                              examId={exam.id}
+                              attemptId={attempt.id}
+                              eventId={e.id}
+                              initialStatus={e.reviewStatus ?? "DETECTED"}
+                            />
                           </td>
                         </tr>
                       ))}
