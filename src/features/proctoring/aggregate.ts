@@ -18,6 +18,15 @@ const SEVERITY_TYPES = new Set([
   "CAMERA_OBSTRUCTED",
   "LOOKING_AWAY",
   "HEAD_TURNED",
+  "LOOK_LEFT",
+  "LOOK_RIGHT",
+  "LOOK_DOWN",
+  "LOOK_UP",
+  "HEAD_LEFT",
+  "HEAD_RIGHT",
+  "HEAD_DOWN",
+  "HEAD_TILTED",
+  "GAZE_HEAD_MISMATCH",
   "HANDS_MISSING",
   "PHONE_DETECTED",
 ]);
@@ -150,6 +159,33 @@ export function aggregateProctoringEvents(attemptId: string, examId: string, eve
   }
   if ((countsByType["HEAD_TURNED"] || 0) > 0) {
     reasons.push(`Candidate turned their head away for 5s+ (${countText(countsByType["HEAD_TURNED"], "time")})`);
+  }
+  const gazeLeft = countsByType["LOOK_LEFT"] || 0;
+  const gazeRight = countsByType["LOOK_RIGHT"] || 0;
+  const gazeDown = countsByType["LOOK_DOWN"] || 0;
+  const gazeUp = countsByType["LOOK_UP"] || 0;
+  if (gazeLeft + gazeRight + gazeDown + gazeUp > 0) {
+    const parts: string[] = [];
+    if (gazeLeft > 0) parts.push(`left ×${gazeLeft}`);
+    if (gazeRight > 0) parts.push(`right ×${gazeRight}`);
+    if (gazeDown > 0) parts.push(`down ×${gazeDown}`);
+    if (gazeUp > 0) parts.push(`up ×${gazeUp}`);
+    reasons.push(`Eye gaze left the screen for 5s+ (${parts.join(", ")})`);
+  }
+  const headLeft = countsByType["HEAD_LEFT"] || 0;
+  const headRight = countsByType["HEAD_RIGHT"] || 0;
+  const headDown = countsByType["HEAD_DOWN"] || 0;
+  const headTilted = countsByType["HEAD_TILTED"] || 0;
+  if (headLeft + headRight + headDown + headTilted > 0) {
+    const parts: string[] = [];
+    if (headLeft > 0) parts.push(`left ×${headLeft}`);
+    if (headRight > 0) parts.push(`right ×${headRight}`);
+    if (headDown > 0) parts.push(`down ×${headDown}`);
+    if (headTilted > 0) parts.push(`tilted ×${headTilted}`);
+    reasons.push(`Head turned away from the screen for 5s+ (${parts.join(", ")})`);
+  }
+  if ((countsByType["GAZE_HEAD_MISMATCH"] || 0) > 0) {
+    reasons.push(`Eyes and head looked in different directions (${countText(countsByType["GAZE_HEAD_MISMATCH"], "time")})`);
   }
   if ((countsByType["HANDS_MISSING"] || 0) > 0) {
     reasons.push(`Hands moved out of camera view for 10s+ (${countText(countsByType["HANDS_MISSING"], "time")})`);

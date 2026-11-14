@@ -19,8 +19,15 @@ export type BehaviorEventType =
   | "FACE_MISSING"
   | "MULTIPLE_FACES"
   | "CAMERA_OBSTRUCTED"
-  | "LOOKING_AWAY"
-  | "HEAD_TURNED"
+  | "LOOK_LEFT"
+  | "LOOK_RIGHT"
+  | "LOOK_DOWN"
+  | "LOOK_UP"
+  | "HEAD_LEFT"
+  | "HEAD_RIGHT"
+  | "HEAD_DOWN"
+  | "HEAD_TILTED"
+  | "GAZE_HEAD_MISMATCH"
   | "HANDS_MISSING"
   | "PHONE_DETECTED";
 
@@ -35,6 +42,55 @@ export interface BehaviorRuleConfig {
 }
 
 export type BehaviorThresholdsConfig = Record<BehaviorEventType, BehaviorRuleConfig>;
+
+const GAZE_DIRECTION_TO_EVENT: Record<string, BehaviorEventType> = {
+  LEFT: "LOOK_LEFT",
+  RIGHT: "LOOK_RIGHT",
+  DOWN: "LOOK_DOWN",
+  UP: "LOOK_UP",
+};
+
+function gazeDirectionToEventType(direction: string): BehaviorEventType {
+  return GAZE_DIRECTION_TO_EVENT[direction] ?? "LOOK_LEFT";
+}
+
+function headOrientationToEventType(orientation: string): BehaviorEventType | null {
+  switch (orientation) {
+    case "LEFT":
+      return "HEAD_LEFT";
+    case "RIGHT":
+      return "HEAD_RIGHT";
+    case "DOWN":
+      return "HEAD_DOWN";
+    case "TILTED":
+      return "HEAD_TILTED";
+    default:
+      return null;
+  }
+}
+
+function headDirectionEqualsGazeDirection(orientation: string, gazeDirection: string): boolean {
+  if (orientation === "LEFT" && gazeDirection === "LEFT") return true;
+  if (orientation === "RIGHT" && gazeDirection === "RIGHT") return true;
+  if (orientation === "DOWN" && gazeDirection === "DOWN") return true;
+  return false;
+}
+
+const PEEK_EVENT_TYPES = new Set<BehaviorEventType>([
+  "LOOK_LEFT",
+  "LOOK_RIGHT",
+  "LOOK_DOWN",
+  "LOOK_UP",
+  "HEAD_LEFT",
+  "HEAD_RIGHT",
+  "HEAD_DOWN",
+  "HEAD_TILTED",
+  "GAZE_HEAD_MISMATCH",
+]);
+
+function isPeekEventType(type: BehaviorEventType): boolean {
+  return PEEK_EVENT_TYPES.has(type);
+}
 
 export const DEFAULT_BEHAVIOR_THRESHOLDS: BehaviorThresholdsConfig = {
   FACE_MISSING: {
@@ -55,13 +111,55 @@ export const DEFAULT_BEHAVIOR_THRESHOLDS: BehaviorThresholdsConfig = {
     severity: "MEDIUM",
     enabled: true,
   },
-  LOOKING_AWAY: {
+  LOOK_LEFT: {
     minDurationMs: 5_000,
     cooldownMs: 10_000,
     severity: "MEDIUM",
     enabled: true,
   },
-  HEAD_TURNED: {
+  LOOK_RIGHT: {
+    minDurationMs: 5_000,
+    cooldownMs: 10_000,
+    severity: "MEDIUM",
+    enabled: true,
+  },
+  LOOK_DOWN: {
+    minDurationMs: 5_000,
+    cooldownMs: 10_000,
+    severity: "MEDIUM",
+    enabled: true,
+  },
+  LOOK_UP: {
+    minDurationMs: 8_000,
+    cooldownMs: 15_000,
+    severity: "LOW",
+    enabled: true,
+  },
+  HEAD_LEFT: {
+    minDurationMs: 5_000,
+    cooldownMs: 10_000,
+    severity: "MEDIUM",
+    enabled: true,
+  },
+  HEAD_RIGHT: {
+    minDurationMs: 5_000,
+    cooldownMs: 10_000,
+    severity: "MEDIUM",
+    enabled: true,
+  },
+  HEAD_DOWN: {
+    minDurationMs: 5_000,
+    cooldownMs: 10_000,
+    severity: "MEDIUM",
+    enabled: true,
+  },
+  HEAD_TILTED: {
+    minDurationMs: 8_000,
+    cooldownMs: 15_000,
+    severity: "LOW",
+    enabled: true,
+  },
+  GAZE_HEAD_MISMATCH: {
     minDurationMs: 5_000,
     cooldownMs: 10_000,
     severity: "MEDIUM",
@@ -272,7 +370,7 @@ export class BehaviorAnalysisEngine {
         },
       },
       {
-        type: "LOOKING_AWAY",
+        type: gazeDirectionToEventType(gazeAnalysis.direction),
         active: faceAnalysis.faceVisible && gazeAnalysis.isLookingAway,
         confidence: gazeAnalysis.confidence,
         metadata: {
@@ -283,14 +381,31 @@ export class BehaviorAnalysisEngine {
         },
       },
       {
-        type: "HEAD_TURNED",
-        active: faceAnalysis.faceVisible && headPoseAnalysis.isHeadTurned,
+        type: headOrientationToEventType(headPoseAnalysis.orientation) ?? "HEAD_TILTED",
+        active:
+          faceAnalysis.faceVisible &&
+          headPoseAnalysis.isHeadTurned &&
+          headOrientationToEventType(headPoseAnalysis.orientation) !== null,
         confidence: headPoseAnalysis.confidence,
         metadata: {
           orientation: headPoseAnalysis.orientation,
           yaw: headPoseAnalysis.yaw,
           pitch: headPoseAnalysis.pitch,
           roll: headPoseAnalysis.roll,
+          movementType: gazeVsHead,
+        },
+      },
+      {
+        type: "GAZE_HEAD_MISMATCH",
+        active:
+          faceAnalysis.faceVisible &&
+          gazeAnalysis.isLookingAway &&
+          headPoseAnalysis.isHeadTurned &&
+          headDirectionEqualsGazeDirection(headPoseAnalysis.orientation, gazeAnalysis.direction) === false,
+        confidence: Math.min(gazeAnalysis.confidence, headPoseAnalysis.confidence),
+        metadata: {
+          gazeDirection: gazeAnalysis.direction,
+          headOrientation: headPoseAnalysis.orientation,
           movementType: gazeVsHead,
         },
       },
@@ -402,7 +517,7 @@ export class BehaviorAnalysisEngine {
       };
 
       tracker.emittedEventId = eventId;
-      if (check.type === "LOOKING_AWAY") {
+      if (isPeekEventType(check.type)) {
         this.lookingAwayEpisodeCount += 1;
       }
 

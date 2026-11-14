@@ -14,6 +14,15 @@ export const PROCTORING_EVENT_TYPES = [
   "CAMERA_OBSTRUCTED",
   "LOOKING_AWAY",
   "HEAD_TURNED",
+  "LOOK_LEFT",
+  "LOOK_RIGHT",
+  "LOOK_DOWN",
+  "LOOK_UP",
+  "HEAD_LEFT",
+  "HEAD_RIGHT",
+  "HEAD_DOWN",
+  "HEAD_TILTED",
+  "GAZE_HEAD_MISMATCH",
   "HANDS_MISSING",
   "PHONE_DETECTED",
 ] as const;
@@ -90,6 +99,15 @@ export const AI_BEHAVIOR_EVENT_TYPES = new Set<ProctoringEventType>([
   "CAMERA_OBSTRUCTED",
   "LOOKING_AWAY",
   "HEAD_TURNED",
+  "LOOK_LEFT",
+  "LOOK_RIGHT",
+  "LOOK_DOWN",
+  "LOOK_UP",
+  "HEAD_LEFT",
+  "HEAD_RIGHT",
+  "HEAD_DOWN",
+  "HEAD_TILTED",
+  "GAZE_HEAD_MISMATCH",
   "HANDS_MISSING",
   "PHONE_DETECTED",
 ]);
@@ -178,39 +196,57 @@ export function normalizeEventMetadata(type: ProctoringEventType, metadata: unkn
 export function getEventTypeTitle(type: ProctoringEventType): string {
   switch (type) {
     case "VISIBILITY_HIDDEN":
-      return "Left exam tab";
+      return "Rời khỏi tab bài thi";
     case "VISIBILITY_VISIBLE":
-      return "Returned to exam tab";
+      return "Quay lại tab bài thi";
     case "WINDOW_BLUR":
-      return "Clicked outside exam window";
+      return "Click ra ngoài cửa sổ thi";
     case "WINDOW_FOCUS":
-      return "Returned to exam window";
+      return "Quay lại cửa sổ thi";
     case "FULLSCREEN_EXIT":
-      return "Exited fullscreen mode";
+      return "Thoát chế độ toàn màn hình";
     case "FULLSCREEN_ENTER":
-      return "Entered fullscreen mode";
+      return "Vào chế độ toàn màn hình";
     case "CAMERA_STATUS":
-      return "Routine camera check";
+      return "Kiểm tra camera định kỳ";
     case "CAMERA_TRACK_ENDED":
-      return "Camera disconnected";
+      return "Mất kết nối camera";
     case "CAMERA_ERROR":
-      return "Camera access issue";
+      return "Sự cố truy cập camera";
     case "CAMERA_SNAPSHOT":
-      return "Check-in photo";
+      return "Ảnh check-in";
     case "FACE_MISSING":
-      return "Face not visible";
+      return "Không thấy gương mặt";
     case "MULTIPLE_FACES":
-      return "Another person detected";
+      return "Phát hiện người khác trong khung hình";
     case "CAMERA_OBSTRUCTED":
-      return "Camera blocked or covered";
+      return "Camera bị che hoặc tối";
     case "LOOKING_AWAY":
-      return "Looking away from screen";
+      return "Mắt nhìn ra ngoài màn hình";
     case "HEAD_TURNED":
-      return "Head turned away";
+      return "Đầu quay khỏi màn hình";
+    case "LOOK_LEFT":
+      return "Mắt liếc sang trái";
+    case "LOOK_RIGHT":
+      return "Mắt liếc sang phải";
+    case "LOOK_DOWN":
+      return "Mắt cúi nhìn xuống";
+    case "LOOK_UP":
+      return "Mắt nhìn lên trên";
+    case "HEAD_LEFT":
+      return "Đầu quay sang trái";
+    case "HEAD_RIGHT":
+      return "Đầu quay sang phải";
+    case "HEAD_DOWN":
+      return "Đầu cúi xuống";
+    case "HEAD_TILTED":
+      return "Đầu nghiêng sang ngang";
+    case "GAZE_HEAD_MISMATCH":
+      return "Mắt và đầu nhìn khác hướng";
     case "HANDS_MISSING":
-      return "Hands out of view";
+      return "Tay rời khỏi khung hình";
     case "PHONE_DETECTED":
-      return "Phone or mobile device detected";
+      return "Phát hiện điện thoại hoặc thiết bị di động";
     default:
       return type;
   }
@@ -219,39 +255,57 @@ export function getEventTypeTitle(type: ProctoringEventType): string {
 export function getEventTypeDescription(type: ProctoringEventType): string {
   switch (type) {
     case "VISIBILITY_HIDDEN":
-      return "Candidate switched to another browser tab or minimized the window.";
+      return "Thí sinh chuyển sang tab khác hoặc thu nhỏ cửa sổ bài thi.";
     case "VISIBILITY_VISIBLE":
-      return "Candidate returned to the exam tab.";
+      return "Thí sinh quay lại tab bài thi.";
     case "WINDOW_BLUR":
-      return "Exam window lost focus (candidate may have clicked another app or window).";
+      return "Cửa sổ bài thi mất trạng thái đang hoạt động (thí sinh có thể đã click sang ứng dụng khác).";
     case "WINDOW_FOCUS":
-      return "Candidate clicked back into the exam window.";
+      return "Thí sinh click quay lại cửa sổ bài thi.";
     case "FULLSCREEN_EXIT":
-      return "Candidate left fullscreen viewing mode.";
+      return "Thí sinh rời khỏi chế độ xem toàn màn hình.";
     case "FULLSCREEN_ENTER":
-      return "Candidate entered fullscreen viewing mode.";
+      return "Thí sinh vào chế độ xem toàn màn hình.";
     case "CAMERA_STATUS":
-      return "Automatic check confirming the camera is running normally.";
+      return "Kiểm tra tự động xác nhận camera đang hoạt động bình thường.";
     case "CAMERA_TRACK_ENDED":
-      return "The webcam stream stopped unexpectedly during the exam.";
+      return "Luồng webcam dừng bất ngờ trong lúc thi.";
     case "CAMERA_ERROR":
-      return "Browser reported an issue accessing the webcam.";
+      return "Trình duyệt báo sự cố khi truy cập webcam.";
     case "CAMERA_SNAPSHOT":
-      return "Automatic webcam photo taken during the exam.";
+      return "Ảnh webcam chụp tự động trong quá trình thi.";
     case "FACE_MISSING":
-      return "Candidate's face was missing from the camera view for 5 seconds or more.";
+      return "Gương mặt thí sinh vắng khỏi khung hình camera trong 5 giây trở lên.";
     case "MULTIPLE_FACES":
-      return "More than one face appeared on camera for 2 seconds or more.";
+      return "Nhiều hơn một gương mặt xuất hiện trên camera trong 2 giây trở lên.";
     case "CAMERA_OBSTRUCTED":
-      return "Camera lens appeared covered or the image went dark for 5 seconds or more.";
+      return "Ống kính camera có vẻ bị che hoặc hình ảnh tối bất thường trong 5 giây trở lên.";
     case "LOOKING_AWAY":
-      return "Candidate looked away from the screen for 5 seconds or more.";
+      return "Thí sinh nhìn ra ngoài màn hình trong 5 giây trở lên.";
     case "HEAD_TURNED":
-      return "Candidate turned their head away from the screen for 5 seconds or more.";
+      return "Thí sinh quay đầu khỏi màn hình trong 5 giây trở lên.";
+    case "LOOK_LEFT":
+      return "Mắt thí sinh liếc sang trái trong 5 giây trở lên (dấu hiệu xem tài liệu bên cạnh).";
+    case "LOOK_RIGHT":
+      return "Mắt thí sinh liếc sang phải trong 5 giây trở lên (dấu hiệu xem tài liệu bên cạnh).";
+    case "LOOK_DOWN":
+      return "Mắt thí sinh cúi nhìn xuống trong 5 giây trở lên (dấu hiệu xem vật dưới bàn).";
+    case "LOOK_UP":
+      return "Mắt thí sinh nhìn lên trên trong 5 giây trở lên (có thể chỉ đang suy nghĩ).";
+    case "HEAD_LEFT":
+      return "Đầu thí sinh quay sang trái trong 5 giây trở lên.";
+    case "HEAD_RIGHT":
+      return "Đầu thí sinh quay sang phải trong 5 giây trở lên.";
+    case "HEAD_DOWN":
+      return "Đầu thí sinh cúi xuống thấp trong 5 giây trở lên.";
+    case "HEAD_TILTED":
+      return "Đầu thí sinh nghiêng sang ngang trong 5 giây trở lên.";
+    case "GAZE_HEAD_MISMATCH":
+      return "Hướng nhìn của mắt và hướng đầu không trùng nhau — có thể đang lén liếc.";
     case "HANDS_MISSING":
-      return "One or both hands were outside the camera frame for 10 seconds or more.";
+      return "Một hoặc hai tay rời khỏi khung hình camera trong 10 giây trở lên.";
     case "PHONE_DETECTED":
-      return "A mobile phone or handheld device was detected for 3 seconds or more.";
+      return "Phát hiện điện thoại hoặc thiết bị cầm tay trong 3 giây trở lên.";
     default:
       return type;
   }
@@ -368,7 +422,16 @@ export function getEventSeverityWeight(type: ProctoringEventType): number {
     case "CAMERA_OBSTRUCTED":
     case "LOOKING_AWAY":
     case "HEAD_TURNED":
+    case "LOOK_LEFT":
+    case "LOOK_RIGHT":
+    case "LOOK_DOWN":
+    case "HEAD_LEFT":
+    case "HEAD_RIGHT":
+    case "HEAD_DOWN":
+    case "GAZE_HEAD_MISMATCH":
       return 3;
+    case "LOOK_UP":
+    case "HEAD_TILTED":
     case "VISIBILITY_HIDDEN":
     case "WINDOW_BLUR":
     case "FULLSCREEN_EXIT":

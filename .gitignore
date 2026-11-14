@@ -39,3 +39,6 @@ next-env.d.ts
 # keep data/exams.json tracked for demo seed if desired; ignore temp files
 /data/*.tmp
 
+
+# Local Netlify folder
+.netlify

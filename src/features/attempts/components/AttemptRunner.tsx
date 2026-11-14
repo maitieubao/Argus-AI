@@ -707,8 +707,12 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
                   <option value="FACE_MISSING">Face Missing (≥5s)</option>
                   <option value="MULTIPLE_FACES">Multiple Faces (≥2s)</option>
                   <option value="CAMERA_OBSTRUCTED">Camera Obstructed (≥5s)</option>
-                  <option value="LOOKING_AWAY">Eye Gaze Looking Away (≥5s)</option>
-                  <option value="HEAD_TURNED">Head Turned 38° (≥5s)</option>
+                  <option value="LOOKING_AWAY">Eye Gaze Left (≥5s)</option>
+                  <option value="LOOK_RIGHT">Eye Gaze Right (≥5s)</option>
+                  <option value="LOOK_DOWN">Eye Gaze Down (≥5s)</option>
+                  <option value="HEAD_TURNED">Head Turned Right 38° (≥5s)</option>
+                  <option value="HEAD_LEFT">Head Turned Left 38° (≥5s)</option>
+                  <option value="HEAD_DOWN">Head Down 30° (≥5s)</option>
                   <option value="HANDS_MISSING">Hand Missing (≥10s)</option>
                   <option value="PHONE_DETECTED">Phone Detected (≥3s)</option>
                 </select>

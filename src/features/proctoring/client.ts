@@ -6,7 +6,7 @@ import {
   type FrameVisionObservation,
   type LiveCandidateMonitoringSnapshot,
 } from "./behavior-engine";
-import type { ProctoringEventType } from "./domain";
+import { getEventTypeTitle, type ProctoringEventType } from "./domain";
 import { computeVideoFrameStats, type DetectedFaceInput, type DetectedHandInput } from "./vision-analyzers";
 
 export type DemoPostureMode =
@@ -15,7 +15,11 @@ export type DemoPostureMode =
   | "MULTIPLE_FACES"
   | "CAMERA_OBSTRUCTED"
   | "LOOKING_AWAY"
+  | "LOOK_RIGHT"
+  | "LOOK_DOWN"
   | "HEAD_TURNED"
+  | "HEAD_LEFT"
+  | "HEAD_DOWN"
   | "HANDS_MISSING"
   | "PHONE_DETECTED";
 
@@ -30,7 +34,6 @@ const BATCH_INTERVAL_MS = 2500;
 const VISION_SAMPLE_INTERVAL_MS = 500; // 2 Hz non-blocking vision loop
 const TELEMETRY_HEARTBEAT_MS = 4000;
 const MAX_BATCH = 20;
-const MAX_SNAPSHOTS = 12;
 
 function nowIso() {
   return new Date().toISOString();
@@ -115,10 +118,38 @@ function buildObservationForMode(
         hands: bothHands,
         frameStats: realStats,
       };
+    case "LOOK_RIGHT":
+      return {
+        timestampMs,
+        faces: [{ ...normalFace, irisGazeOffset: { horizontal: 0.45, vertical: 0 } }],
+        hands: bothHands,
+        frameStats: realStats,
+      };
+    case "LOOK_DOWN":
+      return {
+        timestampMs,
+        faces: [{ ...normalFace, irisGazeOffset: { horizontal: 0, vertical: 0.5 } }],
+        hands: bothHands,
+        frameStats: realStats,
+      };
     case "HEAD_TURNED":
       return {
         timestampMs,
         faces: [{ ...normalFace, eulerAngles: { yaw: 38, pitch: 0, roll: 0 } }],
+        hands: bothHands,
+        frameStats: realStats,
+      };
+    case "HEAD_LEFT":
+      return {
+        timestampMs,
+        faces: [{ ...normalFace, eulerAngles: { yaw: -38, pitch: 0, roll: 0 } }],
+        hands: bothHands,
+        frameStats: realStats,
+      };
+    case "HEAD_DOWN":
+      return {
+        timestampMs,
+        faces: [{ ...normalFace, eulerAngles: { yaw: 0, pitch: 30, roll: 0 } }],
         hands: bothHands,
         frameStats: realStats,
       };
@@ -169,7 +200,6 @@ export function useProctoringEvents(params: {
   const queueRef = useRef<OutEvent[]>([]);
   const lastSigRef = useRef<string>("");
   const lastTimeRef = useRef<number>(0);
-  const snapshotsRef = useRef<number>(0);
   const activeRef = useRef(active);
   const flushedOnEndRef = useRef(false);
 
@@ -224,7 +254,9 @@ export function useProctoringEvents(params: {
 
         if (newlyDetected.length > 0) {
           for (const ev of newlyDetected) {
-            setLastDetectedBanner(`${ev.eventType} (${(ev.durationMs / 1000).toFixed(1)}s)`);
+            setLastDetectedBanner(
+              `${getEventTypeTitle(ev.eventType as ProctoringEventType)} (${(ev.durationMs / 1000).toFixed(1)}s)`,
+            );
             queueRef.current.push({
               type: ev.eventType as ProctoringEventType,
               occurredAt: ev.startTimestamp,
@@ -272,6 +304,7 @@ export function useProctoringEvents(params: {
               rightHandVisible: latest.rightHandVisible,
               totalMonitoringDurationMs: metrics.totalMonitoringDurationMs,
               bothHandsVisibleDurationMs: metrics.bothHandsVisibleDurationMs,
+              ...(snapMeta ?? {}),
               source: "ai_proctor_heartbeat",
             },
           });
@@ -288,7 +321,6 @@ export function useProctoringEvents(params: {
     queueRef.current = [];
     lastSigRef.current = "";
     lastTimeRef.current = 0;
-    snapshotsRef.current = 0;
     virtualClockOffsetRef.current = 0;
 
     if (!active) {
@@ -302,14 +334,34 @@ export function useProctoringEvents(params: {
       candidateId: candidateName,
     });
 
+    const captureCurrentSnapshot = () => {
+      const video = camera?.getVideoEl ? camera.getVideoEl() : null;
+      return captureCameraSnapshot(video);
+    };
+
     const enqueue = (event: OutEvent) => {
       if (!activeRef.current) return;
-      const sig = `${event.type}:${JSON.stringify(event.metadata || {})}`;
+      const metaForSig = event.metadata ? { ...event.metadata } : {};
+      delete metaForSig.dataUrl;
+      delete metaForSig.capturedAt;
+      const sig = `${event.type}:${JSON.stringify(metaForSig)}`;
       const t = Date.now();
       if (sig === lastSigRef.current && t - lastTimeRef.current < DEDUPE_WINDOW_MS) return;
       lastSigRef.current = sig;
       lastTimeRef.current = t;
-      queueRef.current.push(event);
+
+      let nextMetadata = event.metadata ? { ...event.metadata } : {};
+      if (typeof nextMetadata.dataUrl !== "string") {
+        const snapMeta = captureCurrentSnapshot();
+        if (snapMeta) {
+          nextMetadata = { ...nextMetadata, ...snapMeta };
+        }
+      }
+
+      queueRef.current.push({
+        ...event,
+        metadata: nextMetadata,
+      });
       if (queueRef.current.length >= MAX_BATCH) {
         flushNow(false);
       }
@@ -348,11 +400,8 @@ export function useProctoringEvents(params: {
 
     const maybeSnapshot = (reason: string) => {
       if (!camera?.enabled) return;
-      if (snapshotsRef.current >= MAX_SNAPSHOTS) return;
-      const video = camera.getVideoEl ? camera.getVideoEl() : null;
-      const meta = captureCameraSnapshot(video);
+      const meta = captureCurrentSnapshot();
       if (!meta) return;
-      snapshotsRef.current += 1;
       enqueue({
         type: "CAMERA_SNAPSHOT",
         occurredAt: nowIso(),

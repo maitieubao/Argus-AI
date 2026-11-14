@@ -424,9 +424,535 @@
     "mcqResult": null,
     "essayGradingStatus": null,
     "overallGradingStatus": "NOT_SUBMITTED",
+    "essayGradings": [
+      {
+        "attemptId": "23ee05da-d371-4263-9273-f7d786f471a1",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
     "essayResult": null,
     "resultPublishedAt": null,
     "createdAt": "2026-11-13T20:37:38.402Z",
-    "updatedAt": "2026-11-13T20:38:00.056Z"
+    "updatedAt": "2026-11-14T03:13:56.950Z"
+  },
+  {
+    "id": "2a471534-92c6-4f67-8654-8a4ecd8122ea",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T03:12:52.620Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T03:12:52.620Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-14T03:12:52.620Z",
+    "deadlineAt": "2026-11-14T03:57:52.620Z",
+    "submittedAt": "2026-11-14T03:13:43.690Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": ""
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 0,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-14T03:13:43.690Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": null,
+          "correctOptionId": "o1b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": null,
+          "correctOptionId": "o2b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": null,
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "2a471534-92c6-4f67-8654-8a4ecd8122ea",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T03:12:52.620Z",
+    "updatedAt": "2026-11-14T03:13:43.690Z"
+  },
+  {
+    "id": "cd9dade0-7753-4424-8ba5-905ec619e525",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T03:31:47.469Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T03:31:47.469Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-14T03:31:47.468Z",
+    "deadlineAt": "2026-11-14T04:16:47.468Z",
+    "submittedAt": "2026-11-14T03:33:21.992Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "hell"
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 0,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-14T03:33:21.993Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": null,
+          "correctOptionId": "o1b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": null,
+          "correctOptionId": "o2b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": null,
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "cd9dade0-7753-4424-8ba5-905ec619e525",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T03:31:47.469Z",
+    "updatedAt": "2026-11-14T03:33:21.992Z"
+  },
+  {
+    "id": "27386220-78a9-4a63-9c9a-bfcd0191461a",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T03:37:52.172Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T03:37:52.172Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-14T03:37:52.171Z",
+    "deadlineAt": "2026-11-14T04:22:52.171Z",
+    "submittedAt": "2026-11-14T03:38:14.157Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1a"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2b"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": "o3c"
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "hello"
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 2,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-14T03:38:14.158Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1a",
+          "correctOptionId": "o1b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2b",
+          "correctOptionId": "o2b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": "o3c",
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "27386220-78a9-4a63-9c9a-bfcd0191461a",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T03:37:52.172Z",
+    "updatedAt": "2026-11-14T03:38:14.157Z"
+  },
+  {
+    "id": "af99a5fd-39aa-4bd5-ba9f-5eea3c851b62",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T04:47:59.212Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T04:47:59.212Z"
+    },
+    "status": "IN_PROGRESS",
+    "submitReason": null,
+    "startedAt": "2026-11-14T04:47:59.212Z",
+    "deadlineAt": "2026-11-14T05:32:59.212Z",
+    "submittedAt": null,
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": null
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": ""
+      }
+    ],
+    "mcqResult": null,
+    "essayGradingStatus": null,
+    "overallGradingStatus": "NOT_SUBMITTED",
+    "essayGradings": [
+      {
+        "attemptId": "af99a5fd-39aa-4bd5-ba9f-5eea3c851b62",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": null,
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T04:47:59.212Z",
+    "updatedAt": "2026-11-14T04:49:46.175Z"
+  },
+  {
+    "id": "e7ed94d6-1286-4ecd-993f-9d2ee88674eb",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T04:49:02.667Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T04:49:02.667Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-14T04:49:02.667Z",
+    "deadlineAt": "2026-11-14T05:34:02.667Z",
+    "submittedAt": "2026-11-14T04:49:31.383Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1b"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2b"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": "o3c"
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "hello"
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 4,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-14T04:49:31.384Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1b",
+          "correctOptionId": "o1b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2b",
+          "correctOptionId": "o2b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": "o3c",
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayGradings": [
+      {
+        "attemptId": "e7ed94d6-1286-4ecd-993f-9d2ee88674eb",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ],
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T04:49:02.667Z",
+    "updatedAt": "2026-11-14T04:49:31.383Z"
+  },
+  {
+    "id": "5ee0ca95-dc56-4278-bbe2-b3ac397e3120",
+    "examId": "exam-published-001",
+    "joinCode": "JOINME01",
+    "candidate": {
+      "fullName": "Bao Mai"
+    },
+    "consentAcceptedAt": "2026-11-14T04:56:41.518Z",
+    "cameraCheck": {
+      "status": "granted",
+      "note": "Camera access granted.",
+      "checkedAt": "2026-11-14T04:56:41.518Z"
+    },
+    "status": "SUBMITTED",
+    "submitReason": "MANUAL",
+    "startedAt": "2026-11-14T04:56:41.518Z",
+    "deadlineAt": "2026-11-14T05:41:41.518Z",
+    "submittedAt": "2026-11-14T04:57:03.886Z",
+    "answers": [
+      {
+        "questionId": "q-mcq-1",
+        "type": "MCQ",
+        "selectedOptionId": "o1a"
+      },
+      {
+        "questionId": "q-mcq-2",
+        "type": "MCQ",
+        "selectedOptionId": "o2b"
+      },
+      {
+        "questionId": "q-mcq-3",
+        "type": "MCQ",
+        "selectedOptionId": "o3c"
+      },
+      {
+        "questionId": "q-essay-1",
+        "type": "ESSAY",
+        "text": "adfkasd;fas"
+      }
+    ],
+    "mcqResult": {
+      "totalEarned": 2,
+      "totalPossible": 5,
+      "gradedAt": "2026-11-14T04:57:03.887Z",
+      "items": [
+        {
+          "questionId": "q-mcq-1",
+          "selectedOptionId": "o1a",
+          "correctOptionId": "o1b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-2",
+          "selectedOptionId": "o2b",
+          "correctOptionId": "o2b",
+          "isCorrect": true,
+          "earnedPoints": 2,
+          "maxPoints": 2
+        },
+        {
+          "questionId": "q-mcq-3",
+          "selectedOptionId": "o3c",
+          "correctOptionId": "o3b",
+          "isCorrect": false,
+          "earnedPoints": 0,
+          "maxPoints": 1
+        }
+      ]
+    },
+    "essayGradingStatus": "PENDING",
+    "overallGradingStatus": "MCQ_GRADED_PENDING_ESSAY_REVIEW",
+    "essayResult": {
+      "earned": 0,
+      "possible": 10,
+      "finalizedCount": 0,
+      "totalCount": 1
+    },
+    "resultPublishedAt": null,
+    "createdAt": "2026-11-14T04:56:41.518Z",
+    "updatedAt": "2026-11-14T04:57:03.886Z",
+    "essayGradings": [
+      {
+        "attemptId": "5ee0ca95-dc56-4278-bbe2-b3ac397e3120",
+        "examId": "exam-published-001",
+        "questionId": "q-essay-1",
+        "aiSuggestion": null,
+        "teacherEvaluation": null
+      }
+    ]
   }
 ]
