@@ -25,14 +25,14 @@ const SEVERITY_TYPES = new Set([
 export function getWarningMeta(level: ProctoringWarningLevel): { label: string } {
   switch (level) {
     case "HIGH":
-      return { label: "High signal level" };
+      return { label: "Needs urgent review" };
     case "MEDIUM":
-      return { label: "Medium signal level" };
+      return { label: "Worth checking" };
     case "LOW":
-      return { label: "Low signal level" };
+      return { label: "Minor activity" };
     case "NONE":
     default:
-      return { label: "No notable signals" };
+      return { label: "All clear" };
   }
 }
 
@@ -131,20 +131,45 @@ export function aggregateProctoringEvents(attemptId: string, examId: string, eve
   const warningLabel = getWarningMeta(warningLevel).label;
 
   const reasons: string[] = [];
-  if ((countsByType["MULTIPLE_FACES"] || 0) > 0) reasons.push(`${countsByType["MULTIPLE_FACES"]} multiple-face detection(s)`);
-  if ((countsByType["PHONE_DETECTED"] || 0) > 0) reasons.push(`${countsByType["PHONE_DETECTED"]} suspicious device / phone detection(s)`);
-  if ((countsByType["FACE_MISSING"] || 0) > 0) reasons.push(`${countsByType["FACE_MISSING"]} face-missing event(s)`);
-  if ((countsByType["CAMERA_OBSTRUCTED"] || 0) > 0) reasons.push(`${countsByType["CAMERA_OBSTRUCTED"]} camera-obstructed event(s)`);
-  if ((countsByType["LOOKING_AWAY"] || 0) > 0) reasons.push(`${countsByType["LOOKING_AWAY"]} prolonged looking-away event(s)`);
-  if ((countsByType["HEAD_TURNED"] || 0) > 0) reasons.push(`${countsByType["HEAD_TURNED"]} prolonged head-turned event(s)`);
-  if ((countsByType["HANDS_MISSING"] || 0) > 0) reasons.push(`${countsByType["HANDS_MISSING"]} hand-visibility signal(s)`);
-  if ((countsByType["VISIBILITY_HIDDEN"] || 0) > 0) reasons.push(`${countsByType["VISIBILITY_HIDDEN"]} tab/window hidden event(s)`);
-  if ((countsByType["WINDOW_BLUR"] || 0) > 0) reasons.push(`${countsByType["WINDOW_BLUR"]} window blur event(s)`);
-  if ((countsByType["FULLSCREEN_EXIT"] || 0) > 0) reasons.push(`${countsByType["FULLSCREEN_EXIT"]} fullscreen exit event(s)`);
-  if ((countsByType["CAMERA_TRACK_ENDED"] || 0) > 0) reasons.push(`${countsByType["CAMERA_TRACK_ENDED"]} camera stream ended event(s)`);
-  if ((countsByType["CAMERA_ERROR"] || 0) > 0) reasons.push(`${countsByType["CAMERA_ERROR"]} camera error event(s)`);
-  if ((countsByType["CAMERA_SNAPSHOT"] || 0) > 0) reasons.push(`${countsByType["CAMERA_SNAPSHOT"]} camera snapshot(s)`);
-  if (reasons.length === 0) reasons.push("No notable focus, fullscreen, or AI camera events recorded.");
+  const countText = (n: number, singular: string, plural = `${singular}s`) =>
+    `${n} ${n === 1 ? singular : plural}`;
+  if ((countsByType["MULTIPLE_FACES"] || 0) > 0) {
+    reasons.push(`Another person appeared on camera (${countText(countsByType["MULTIPLE_FACES"], "time")})`);
+  }
+  if ((countsByType["PHONE_DETECTED"] || 0) > 0) {
+    reasons.push(`Phone or mobile device detected (${countText(countsByType["PHONE_DETECTED"], "time")})`);
+  }
+  if ((countsByType["FACE_MISSING"] || 0) > 0) {
+    reasons.push(`Candidate's face left the camera view (${countText(countsByType["FACE_MISSING"], "time")})`);
+  }
+  if ((countsByType["CAMERA_OBSTRUCTED"] || 0) > 0) {
+    reasons.push(`Camera lens appeared covered or blocked (${countText(countsByType["CAMERA_OBSTRUCTED"], "time")})`);
+  }
+  if ((countsByType["LOOKING_AWAY"] || 0) > 0) {
+    reasons.push(`Candidate looked away from the screen for 5s+ (${countText(countsByType["LOOKING_AWAY"], "time")})`);
+  }
+  if ((countsByType["HEAD_TURNED"] || 0) > 0) {
+    reasons.push(`Candidate turned their head away for 5s+ (${countText(countsByType["HEAD_TURNED"], "time")})`);
+  }
+  if ((countsByType["HANDS_MISSING"] || 0) > 0) {
+    reasons.push(`Hands moved out of camera view for 10s+ (${countText(countsByType["HANDS_MISSING"], "time")})`);
+  }
+  if ((countsByType["VISIBILITY_HIDDEN"] || 0) > 0) {
+    reasons.push(`Switched away from the exam tab (${countText(countsByType["VISIBILITY_HIDDEN"], "time")})`);
+  }
+  if ((countsByType["WINDOW_BLUR"] || 0) > 0) {
+    reasons.push(`Clicked outside the exam window (${countText(countsByType["WINDOW_BLUR"], "time")})`);
+  }
+  if ((countsByType["FULLSCREEN_EXIT"] || 0) > 0) {
+    reasons.push(`Exited fullscreen mode (${countText(countsByType["FULLSCREEN_EXIT"], "time")})`);
+  }
+  if ((countsByType["CAMERA_TRACK_ENDED"] || 0) > 0) {
+    reasons.push(`Webcam disconnected during the exam (${countText(countsByType["CAMERA_TRACK_ENDED"], "time")})`);
+  }
+  if ((countsByType["CAMERA_ERROR"] || 0) > 0) {
+    reasons.push(`Camera access error occurred (${countText(countsByType["CAMERA_ERROR"], "time")})`);
+  }
+  if (reasons.length === 0) reasons.push("No unusual behavior, tab switches, or camera issues recorded.");
 
   return {
     attemptId,

@@ -76,22 +76,13 @@ export interface ProctoringEventInput {
 }
 
 export const MAX_PROCTORING_EVENTS_PER_REQUEST = 50;
-export const MAX_PROCTORING_EVENTS_PER_ATTEMPT = 500;
+export const MAX_PROCTORING_EVENTS_PER_ATTEMPT = 1000;
 export const MAX_METADATA_JSON_LENGTH = 250_000;
 export const MAX_SNAPSHOT_DATA_URL_LENGTH = 180_000;
 
 const EVENT_TYPE_SET = new Set<string>(PROCTORING_EVENT_TYPES);
 
-const SNAPSHOT_ALLOWED_TYPES = new Set<ProctoringEventType>([
-  "CAMERA_SNAPSHOT",
-  "FACE_MISSING",
-  "MULTIPLE_FACES",
-  "CAMERA_OBSTRUCTED",
-  "LOOKING_AWAY",
-  "HEAD_TURNED",
-  "HANDS_MISSING",
-  "PHONE_DETECTED",
-]);
+const SNAPSHOT_ALLOWED_TYPES = new Set<ProctoringEventType>(PROCTORING_EVENT_TYPES);
 
 export const AI_BEHAVIOR_EVENT_TYPES = new Set<ProctoringEventType>([
   "FACE_MISSING",
@@ -184,44 +175,187 @@ export function normalizeEventMetadata(type: ProctoringEventType, metadata: unkn
   return Object.keys(out).length > 0 ? out : null;
 }
 
-export function getEventTypeLabel(type: ProctoringEventType): string {
+export function getEventTypeTitle(type: ProctoringEventType): string {
   switch (type) {
     case "VISIBILITY_HIDDEN":
-      return "Tab or window hidden";
+      return "Left exam tab";
     case "VISIBILITY_VISIBLE":
-      return "Returned to tab/window";
+      return "Returned to exam tab";
     case "WINDOW_BLUR":
-      return "Window focus lost";
+      return "Clicked outside exam window";
     case "WINDOW_FOCUS":
-      return "Window focus regained";
+      return "Returned to exam window";
     case "FULLSCREEN_EXIT":
-      return "Exited fullscreen";
+      return "Exited fullscreen mode";
     case "FULLSCREEN_ENTER":
-      return "Entered fullscreen";
+      return "Entered fullscreen mode";
     case "CAMERA_STATUS":
-      return "Camera status / telemetry signal";
+      return "Routine camera check";
     case "CAMERA_TRACK_ENDED":
-      return "Camera stream ended";
+      return "Camera disconnected";
     case "CAMERA_ERROR":
-      return "Camera error/signal";
+      return "Camera access issue";
     case "CAMERA_SNAPSHOT":
-      return "Camera snapshot";
+      return "Check-in photo";
     case "FACE_MISSING":
-      return "AI Proctor: Face missing from frame (≥5s)";
+      return "Face not visible";
     case "MULTIPLE_FACES":
-      return "AI Proctor: Multiple faces detected (≥2s)";
+      return "Another person detected";
     case "CAMERA_OBSTRUCTED":
-      return "AI Proctor: Camera or face obstructed (≥5s)";
+      return "Camera blocked or covered";
     case "LOOKING_AWAY":
-      return "AI Proctor: Prolonged eye gaze looking away (≥5s)";
+      return "Looking away from screen";
     case "HEAD_TURNED":
-      return "AI Proctor: Prolonged head turned away (≥5s)";
+      return "Head turned away";
     case "HANDS_MISSING":
-      return "AI Proctor: One or both hands out of frame (≥10s)";
+      return "Hands out of view";
     case "PHONE_DETECTED":
-      return "AI Proctor: Suspicious device / mobile phone detected (≥3s)";
+      return "Phone or mobile device detected";
     default:
       return type;
+  }
+}
+
+export function getEventTypeDescription(type: ProctoringEventType): string {
+  switch (type) {
+    case "VISIBILITY_HIDDEN":
+      return "Candidate switched to another browser tab or minimized the window.";
+    case "VISIBILITY_VISIBLE":
+      return "Candidate returned to the exam tab.";
+    case "WINDOW_BLUR":
+      return "Exam window lost focus (candidate may have clicked another app or window).";
+    case "WINDOW_FOCUS":
+      return "Candidate clicked back into the exam window.";
+    case "FULLSCREEN_EXIT":
+      return "Candidate left fullscreen viewing mode.";
+    case "FULLSCREEN_ENTER":
+      return "Candidate entered fullscreen viewing mode.";
+    case "CAMERA_STATUS":
+      return "Automatic check confirming the camera is running normally.";
+    case "CAMERA_TRACK_ENDED":
+      return "The webcam stream stopped unexpectedly during the exam.";
+    case "CAMERA_ERROR":
+      return "Browser reported an issue accessing the webcam.";
+    case "CAMERA_SNAPSHOT":
+      return "Automatic webcam photo taken during the exam.";
+    case "FACE_MISSING":
+      return "Candidate's face was missing from the camera view for 5 seconds or more.";
+    case "MULTIPLE_FACES":
+      return "More than one face appeared on camera for 2 seconds or more.";
+    case "CAMERA_OBSTRUCTED":
+      return "Camera lens appeared covered or the image went dark for 5 seconds or more.";
+    case "LOOKING_AWAY":
+      return "Candidate looked away from the screen for 5 seconds or more.";
+    case "HEAD_TURNED":
+      return "Candidate turned their head away from the screen for 5 seconds or more.";
+    case "HANDS_MISSING":
+      return "One or both hands were outside the camera frame for 10 seconds or more.";
+    case "PHONE_DETECTED":
+      return "A mobile phone or handheld device was detected for 3 seconds or more.";
+    default:
+      return type;
+  }
+}
+
+export function getEventTypeLabel(type: ProctoringEventType): string {
+  return getEventTypeTitle(type);
+}
+
+export function formatDurationFriendly(ms?: unknown): string {
+  if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) return "—";
+  const totalSeconds = Math.round(ms / 1000);
+  if (totalSeconds < 60) {
+    return `${(ms / 1000).toFixed(1)}s`;
+  }
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes < 60) {
+    return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const remMinutes = minutes % 60;
+  return remMinutes > 0 ? `${hours}h ${remMinutes}m` : `${hours}h`;
+}
+
+export function formatCameraCheckStatus(status?: string | null): string {
+  switch (status) {
+    case "granted":
+      return "Enabled";
+    case "denied":
+      return "Permission denied";
+    case "unavailable":
+      return "Camera unavailable";
+    case "skipped":
+      return "Skipped during check-in";
+    case "not_checked":
+    default:
+      return "Not checked";
+  }
+}
+
+export function formatFacePresence(input: {
+  cameraObstructed: boolean;
+  faceCount: number;
+  faceVisible: boolean;
+}): string {
+  if (input.cameraObstructed) return "Camera blocked";
+  if (input.faceCount >= 2) return `Multiple people (${input.faceCount})`;
+  return input.faceVisible ? "Face visible" : "Face not in view";
+}
+
+export function formatGazeDirection(direction?: string | null): string {
+  switch (direction) {
+    case "CENTER":
+      return "Looking at screen";
+    case "LEFT":
+      return "Looking left";
+    case "RIGHT":
+      return "Looking right";
+    case "UP":
+      return "Looking up";
+    case "DOWN":
+      return "Looking down";
+    case "UNKNOWN":
+      return "Unclear";
+    default:
+      return direction || "—";
+  }
+}
+
+export function formatHeadOrientation(orientation?: string | null): string {
+  switch (orientation) {
+    case "FORWARD":
+      return "Facing screen";
+    case "LEFT":
+      return "Turned left";
+    case "RIGHT":
+      return "Turned right";
+    case "UP":
+      return "Tilted up";
+    case "DOWN":
+      return "Tilted down";
+    case "UNKNOWN":
+      return "Unclear";
+    default:
+      return orientation || "—";
+  }
+}
+
+export function formatHandsVisibility(leftVisible: boolean, rightVisible: boolean): string {
+  if (leftVisible && rightVisible) return "Both hands visible";
+  if (!leftVisible && !rightVisible) return "Neither hand visible";
+  return leftVisible ? "Left hand only" : "Right hand only";
+}
+
+export function formatReviewStatusLabel(status?: ProctoringReviewStatus | null): string {
+  switch (status) {
+    case "CONFIRMED":
+      return "Flagged";
+    case "RESOLVED":
+      return "Cleared";
+    case "DETECTED":
+    default:
+      return "Needs review";
   }
 }
 

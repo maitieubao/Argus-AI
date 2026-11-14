@@ -4,11 +4,22 @@ import { getSession } from "@/features/auth/session";
 import { getExamById, formatDateTime } from "@/features/exams/store";
 import { getAttemptById } from "@/features/attempts/store";
 import { getProctoringSummaryByAttempt } from "@/features/proctoring/service";
-import { getEventTypeLabel, isKnownEventType } from "@/features/proctoring/domain";
+import {
+  type ProctoringEvent,
+  formatCameraCheckStatus,
+  formatDurationFriendly,
+  formatFacePresence,
+  formatGazeDirection,
+  formatHandsVisibility,
+  formatHeadOrientation,
+  getEventTypeDescription,
+  getEventTypeTitle,
+  isKnownEventType,
+} from "@/features/proctoring/domain";
 import ProctorEventReviewControls from "./ProctorEventReviewControls";
 
 export const metadata = {
-  title: "Attempt proctoring details | Argus AI",
+  title: "Candidate monitoring report | Argus AI",
 };
 
 function attemptStatusLabel(status: string, submitReason: string | null) {
@@ -37,47 +48,73 @@ function fmtEventTime(iso: string) {
   });
 }
 
-function fmtDurationSeconds(ms?: unknown): string {
-  if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) return "—";
-  return `${(ms / 1000).toFixed(1)}s`;
-}
-
 function getSnapshotDataUrl(meta: Record<string, unknown> | null): string | null {
   if (!meta) return null;
   const dataUrl = meta.dataUrl;
   return typeof dataUrl === "string" && dataUrl.startsWith("data:image/") ? dataUrl : null;
 }
 
-function renderMetadata(meta: Record<string, unknown> | null) {
-  if (!meta) return "—";
+function renderFriendlyDetails(event: ProctoringEvent): string {
+  const meta = event.metadata;
   const parts: string[] = [];
-  if (typeof meta.durationMs === "number") {
-    parts.push(`duration: ${(meta.durationMs / 1000).toFixed(1)}s`);
-  }
-  if (typeof meta.confidence === "number") {
-    parts.push(`confidence: ${Math.round(meta.confidence * 100)}%`);
-  }
-  for (const [k, v] of Object.entries(meta)) {
-    if (
-      k === "dataUrl" ||
-      k === "durationMs" ||
-      k === "confidence" ||
-      k === "startTimestamp" ||
-      k === "endTimestamp" ||
-      k === "totalMonitoringDurationMs" ||
-      k === "bothHandsVisibleDurationMs"
-    ) {
-      continue;
+
+  if (meta) {
+    if (typeof meta.durationMs === "number" && meta.durationMs > 0) {
+      parts.push(`Lasted ${formatDurationFriendly(meta.durationMs)}`);
     }
-    if (v == null || v === "") continue;
-    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
-      parts.push(`${k}: ${String(v)}`);
+
+    if (typeof meta.confidence === "number" && Number.isFinite(meta.confidence)) {
+      const pct = Math.round(meta.confidence * 100);
+      const level = pct >= 85 ? "High confidence" : pct >= 60 ? "Medium confidence" : "Low confidence";
+      parts.push(`${level} (${pct}%)`);
+    }
+
+    if (event.type === "CAMERA_SNAPSHOT") {
+      if (meta.reason === "session_start") parts.push("Taken when the exam started");
+      else if (meta.reason === "visibility_hidden") parts.push("Taken when switching tabs");
+      else if (meta.reason === "fullscreen_exit") parts.push("Taken when exiting fullscreen");
+    }
+
+    if (event.type === "CAMERA_STATUS") {
+      if (meta.status === "monitoring_enabled") {
+        parts.push("Webcam monitoring started");
+      } else if (typeof meta.faceVisible === "boolean") {
+        const presence = formatFacePresence({
+          cameraObstructed: meta.cameraObstructed === true,
+          faceCount: typeof meta.faceCount === "number" ? meta.faceCount : 1,
+          faceVisible: meta.faceVisible,
+        });
+        const gaze =
+          typeof meta.eyeGazeDirection === "string"
+            ? formatGazeDirection(meta.eyeGazeDirection)
+            : null;
+        parts.push(gaze ? `${presence} · ${gaze}` : presence);
+      }
+    }
+
+    if (event.type === "HEAD_TURNED" && typeof meta.headOrientation === "string") {
+      parts.push(formatHeadOrientation(meta.headOrientation));
+    }
+
+    if (event.type === "LOOKING_AWAY" && typeof meta.eyeGazeDirection === "string") {
+      parts.push(formatGazeDirection(meta.eyeGazeDirection));
+    }
+
+    if (event.type === "HANDS_MISSING") {
+      const left = meta.leftHandVisible === true;
+      const right = meta.rightHandVisible === true;
+      parts.push(formatHandsVisibility(left, right));
+    }
+
+    if (event.type === "CAMERA_ERROR" && typeof meta.reason === "string" && meta.reason) {
+      parts.push(`Reason: ${meta.reason}`);
     }
   }
-  if (getSnapshotDataUrl(meta)) {
-    parts.push("evidence snapshot attached");
+
+  if (parts.length === 0) {
+    return getEventTypeDescription(event.type);
   }
-  return parts.length ? parts.join(" · ") : "—";
+  return parts.join(" · ");
 }
 
 export default async function ExamAttemptProctoringPage({
@@ -98,7 +135,11 @@ export default async function ExamAttemptProctoringPage({
   const summaryResult = await getProctoringSummaryByAttempt(attempt.id);
   const summary = summaryResult.ok ? summaryResult.data : null;
 
-  const countsEntries = summary ? Object.entries(summary.countsByType).sort((a, b) => b[1] - a[1]) : [];
+  const countsEntries = summary
+    ? Object.entries(summary.countsByType)
+        .filter(([type]) => type !== "CAMERA_STATUS")
+        .sort((a, b) => b[1] - a[1])
+    : [];
   const snapshots = (summary?.events || []).filter((e) => getSnapshotDataUrl(e.metadata) !== null);
   const live = summary?.liveTelemetry ?? null;
 
@@ -107,7 +148,7 @@ export default async function ExamAttemptProctoringPage({
       <section className="content narrow">
         <div className="content-head">
           <div>
-            <h1>Proctoring: {attempt.candidate.fullName}</h1>
+            <h1>Monitoring report: {attempt.candidate.fullName}</h1>
             <p className="muted">
               Exam: <strong>{exam.title}</strong> · Status: <strong>{attemptStatusLabel(attempt.status, attempt.submitReason)}</strong>
             </p>
@@ -118,122 +159,130 @@ export default async function ExamAttemptProctoringPage({
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Link href={`/exams/${exam.id}/grading/${attempt.id}`} className="secondary-btn link-btn">Grade</Link>
             <Link href={`/exams/${exam.id}/results`} className="secondary-btn link-btn">Results</Link>
-            <Link href={`/exams/${exam.id}/proctoring`} className="secondary-btn link-btn">Proctoring list</Link>
+            <Link href={`/exams/${exam.id}/proctoring`} className="secondary-btn link-btn">Back to list</Link>
             <Link href={`/exams/${exam.id}`} className="secondary-btn link-btn">Exam</Link>
           </div>
         </div>
 
         {!summary ? (
           <div className="card question-section">
-            <div className="error-message">Unable to load proctoring data.</div>
+            <div className="error-message">Unable to load monitoring data.</div>
           </div>
         ) : (
           <>
-            {/* Phase 5.1: Live Monitoring Status Card */}
             <div className="card question-section">
-              <div className="question-section-head" style={{ marginBottom: 8 }}>
+              <div className="question-section-head">
                 <div>
-                  <h2>Live AI Monitoring Status</h2>
-                  <p className="muted" style={{ fontSize: 13 }}>
-                    Real-time face, eye gaze, head pose, and hand visibility telemetry
+                  <h2>Summary</h2>
+                  <p className="muted">
+                    Key behavior highlights and review progress for this candidate.
                   </p>
                 </div>
                 <span className={`risk-badge ${levelClass(summary.warningLevel)}`}>{summary.warningLabel}</span>
               </div>
-              <div className="exam-info-block" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-                <div>
-                  Webcam status: <strong>{attempt.cameraCheck?.status ?? "not_checked"}</strong>
-                </div>
-                <div>
-                  Face visibility:{" "}
-                  <strong>
-                    {!live
-                      ? "—"
-                      : live.cameraObstructed
-                        ? "Obstructed"
-                        : live.faceCount >= 2
-                          ? `Multiple faces (${live.faceCount})`
-                          : live.faceVisible
-                            ? "Visible (1 face)"
-                            : "Missing"}
-                  </strong>
-                </div>
-                <div>
-                  Eye gaze: <strong>{live ? live.eyeGazeDirection : "—"}</strong>
-                </div>
-                <div>
-                  Head pose:{" "}
-                  <strong>
-                    {live ? `${live.headOrientation} (yaw ${live.yaw}°, pitch ${live.pitch}°)` : "—"}
-                  </strong>
-                </div>
-                <div>
-                  Left hand: <strong>{live ? (live.leftHandVisible ? "Visible" : "Missing") : "—"}</strong>
-                </div>
-                <div>
-                  Right hand: <strong>{live ? (live.rightHandVisible ? "Visible" : "Missing") : "—"}</strong>
-                </div>
-                <div>
-                  Monitored time: <strong>{live ? fmtDurationSeconds(live.totalMonitoringDurationMs) : "—"}</strong>
-                </div>
-                <div>
-                  Hands visible time: <strong>{live ? fmtDurationSeconds(live.bothHandsVisibleDurationMs) : "—"}</strong>
-                </div>
-              </div>
-            </div>
 
-            {/* Summary Card */}
-            <div className="card question-section">
-              <div className="question-section-head" style={{ marginBottom: 8 }}>
-                <div>
-                  <h2>Summary</h2>
+              <div className="stat-grid">
+                <div className="stat-card">
+                  <span className="stat-label">Items needing review</span>
+                  <span className="stat-value">{summary.unresolvedCount}</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-label">Already reviewed</span>
+                  <span className="stat-value">{summary.reviewedCount}</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-label">Camera photos saved</span>
+                  <span className="stat-value">{snapshots.length}</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-label">Camera time</span>
+                  <span className="stat-value">{live ? formatDurationFriendly(live.totalMonitoringDurationMs) : "—"}</span>
                 </div>
               </div>
-              <div className="exam-info-block" style={{ marginBottom: 10 }}>
-                <div>
-                  Total events: <strong>{summary.totalEvents}</strong> · Reviewed: <strong>{summary.reviewedCount}</strong> · Unresolved: <strong>{summary.unresolvedCount}</strong>
-                </div>
-                <div>
-                  First event: <strong>{summary.firstEventAt ? fmtEventTime(summary.firstEventAt) : "—"}</strong> · Last event: <strong>{summary.lastEventAt ? fmtEventTime(summary.lastEventAt) : "—"}</strong>
-                </div>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>Key observations</div>
+                <ul style={{ marginLeft: 20, fontSize: 15, lineHeight: 1.7 }}>
+                  {summary.warningReasons.map((r, i) => (
+                    <li key={i}>{r}</li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>Reasons</div>
-                {summary.warningReasons.length ? (
-                  <ul style={{ marginLeft: 18, fontSize: 14, lineHeight: 1.5 }}>
-                    {summary.warningReasons.map((r, i) => (
-                      <li key={i}>{r}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="muted">No notable signals.</div>
-                )}
+
+              <div className="muted" style={{ fontSize: 13 }}>
+                First recorded: <strong>{summary.firstEventAt ? fmtEventTime(summary.firstEventAt) : "—"}</strong> · Last recorded: <strong>{summary.lastEventAt ? fmtEventTime(summary.lastEventAt) : "—"}</strong>
               </div>
             </div>
 
             <div className="card question-section">
-              <div className="question-section-head" style={{ marginBottom: 8 }}>
+              <div className="question-section-head">
                 <div>
-                  <h2>Events by type</h2>
+                  <h2>Camera & Presence Overview</h2>
+                  <p className="muted">
+                    Latest reading from the candidate&apos;s webcam during the exam.
+                  </p>
+                </div>
+              </div>
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Camera setup</span>
+                  <span className="detail-value">{formatCameraCheckStatus(attempt.cameraCheck?.status)}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Candidate presence</span>
+                  <span className="detail-value">{live ? formatFacePresence(live) : "—"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Eye focus</span>
+                  <span className="detail-value">{live ? formatGazeDirection(live.eyeGazeDirection) : "—"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Head position</span>
+                  <span className="detail-value">{live ? formatHeadOrientation(live.headOrientation) : "—"}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Hands in view</span>
+                  <span className="detail-value">
+                    {live ? formatHandsVisibility(live.leftHandVisible, live.rightHandVisible) : "—"}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Both hands visible time</span>
+                  <span className="detail-value">
+                    {live ? formatDurationFriendly(live.bothHandsVisibleDurationMs) : "—"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="card question-section">
+              <div className="question-section-head">
+                <div>
+                  <h2>Activity Summary</h2>
+                  <p className="muted">How many times each browser or camera activity occurred.</p>
                 </div>
               </div>
               {countsEntries.length === 0 ? (
-                <div className="empty-state">No proctoring events recorded for this attempt.</div>
+                <div className="empty-inline muted">No notable browser or camera activities recorded.</div>
               ) : (
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Type</th>
-                        <th>Description</th>
+                        <th>Activity</th>
+                        <th>What happened</th>
                         <th>Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {countsEntries.map(([type, count]) => (
                         <tr key={type}>
-                          <td data-label="Type"><code>{type}</code></td>
-                          <td data-label="Description">{isKnownEventType(type) ? getEventTypeLabel(type) : type}</td>
+                          <td data-label="Activity">
+                            <strong>{isKnownEventType(type) ? getEventTypeTitle(type) : type}</strong>
+                          </td>
+                          <td data-label="What happened" className="muted">
+                            {isKnownEventType(type) ? getEventTypeDescription(type) : "Recorded during the exam."}
+                          </td>
                           <td data-label="Count"><strong>{count}</strong></td>
                         </tr>
                       ))}
@@ -244,13 +293,16 @@ export default async function ExamAttemptProctoringPage({
             </div>
 
             <div className="card question-section">
-              <div className="question-section-head" style={{ marginBottom: 8 }}>
+              <div className="question-section-head">
                 <div>
-                  <h2>Evidence & Camera Snapshots</h2>
+                  <h2>Captured Photos</h2>
+                  <p className="muted">
+                    Webcam photos saved when an activity or routine check-in was recorded.
+                  </p>
                 </div>
               </div>
               {snapshots.length === 0 ? (
-                <div className="muted">No evidence snapshots recorded.</div>
+                <div className="empty-inline muted">No webcam photos were captured for this attempt.</div>
               ) : (
                 <div className="snapshot-grid">
                   {snapshots.map((e) => {
@@ -259,9 +311,9 @@ export default async function ExamAttemptProctoringPage({
                     return (
                       <div key={e.id} className="snapshot-item">
                         {/* eslint-disable-next-line @next/next/no-img-element -- snapshot is a stored data URL */}
-                        <img src={dataUrl} alt={`Evidence for ${e.type}`} />
-                        <div style={{ fontSize: 12, fontWeight: 600, marginTop: 4 }}>
-                          <code>{e.type}</code>
+                        <img src={dataUrl} alt={`Webcam photo for ${getEventTypeTitle(e.type)}`} />
+                        <div style={{ fontSize: 13, fontWeight: 600, marginTop: 8 }}>
+                          {getEventTypeTitle(e.type)}
                         </div>
                         <div className="muted" style={{ fontSize: 12 }}>
                           {fmtEventTime(e.occurredAt)}
@@ -271,51 +323,79 @@ export default async function ExamAttemptProctoringPage({
                   })}
                 </div>
               )}
-              <div className="muted" style={{ marginTop: 8, fontSize: 13 }}>
-                Camera check status: <strong>{attempt.cameraCheck?.status ?? "not_checked"}</strong>
-                {attempt.cameraCheck?.note ? ` — ${attempt.cameraCheck.note}` : ""}
-              </div>
+              {attempt.cameraCheck?.note ? (
+                <div className="muted" style={{ marginTop: 12, fontSize: 13 }}>
+                  Camera note: {attempt.cameraCheck.note}
+                </div>
+              ) : null}
             </div>
 
             <div className="card question-section">
-              <div className="question-section-head" style={{ marginBottom: 8 }}>
+              <div className="question-section-head">
                 <div>
-                  <h2>Event timeline & Human Review</h2>
+                  <h2>Timeline & Review</h2>
+                  <p className="muted">
+                    Chronological log of recorded events. Flag items that need follow-up or clear false alarms.
+                  </p>
                 </div>
               </div>
               {summary.events.length === 0 ? (
-                <div className="empty-state">No proctoring events recorded.</div>
+                <div className="empty-inline muted">No events recorded for this attempt.</div>
               ) : (
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
                         <th>Time</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Metadata & Duration</th>
-                        <th>Review Status</th>
+                        <th>Activity</th>
+                        <th>Details</th>
+                        <th>Photo</th>
+                        <th>Review</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {summary.events.map((e) => (
-                        <tr key={e.id}>
-                          <td data-label="Time">{fmtEventTime(e.occurredAt)}</td>
-                          <td data-label="Type"><code>{e.type}</code></td>
-                          <td data-label="Description">{getEventTypeLabel(e.type)}</td>
-                          <td data-label="Metadata" className="muted" style={{ fontSize: 13 }}>
-                            {renderMetadata(e.metadata as Record<string, unknown> | null)}
-                          </td>
-                          <td data-label="Review Status">
-                            <ProctorEventReviewControls
-                              examId={exam.id}
-                              attemptId={attempt.id}
-                              eventId={e.id}
-                              initialStatus={e.reviewStatus ?? "DETECTED"}
-                            />
-                          </td>
-                        </tr>
-                      ))}
+                      {summary.events.map((e) => {
+                        const snapUrl = getSnapshotDataUrl(e.metadata);
+                        return (
+                          <tr key={e.id}>
+                            <td data-label="Time" style={{ whiteSpace: "nowrap", fontSize: 13 }}>
+                              {fmtEventTime(e.occurredAt)}
+                            </td>
+                            <td data-label="Activity">
+                              <strong>{getEventTypeTitle(e.type)}</strong>
+                            </td>
+                            <td data-label="Details" className="muted" style={{ fontSize: 14 }}>
+                              {renderFriendlyDetails(e)}
+                            </td>
+                            <td data-label="Photo">
+                              {snapUrl ? (
+                                /* eslint-disable-next-line @next/next/no-img-element -- snapshot is a stored data URL */
+                                <img
+                                  src={snapUrl}
+                                  alt={`Webcam photo for ${getEventTypeTitle(e.type)}`}
+                                  style={{
+                                    width: 88,
+                                    height: "auto",
+                                    borderRadius: 6,
+                                    border: "1px solid var(--color-border)",
+                                    display: "block",
+                                  }}
+                                />
+                              ) : (
+                                <span className="muted" style={{ fontSize: 13 }}>No photo</span>
+                              )}
+                            </td>
+                            <td data-label="Review">
+                              <ProctorEventReviewControls
+                                examId={exam.id}
+                                attemptId={attempt.id}
+                                eventId={e.id}
+                                initialStatus={e.reviewStatus ?? "DETECTED"}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -13,7 +13,7 @@ export default async function JoinExamPage({
   const code = (params.code || "").toUpperCase();
 
   return (
-    <main className="page-center">
+    <main className="hero">
       <div className="login-wrap" style={{ maxWidth: 560 }}>
         <div className="brand">
           <div className="brand-badge">Candidate</div>
@@ -21,8 +21,8 @@ export default async function JoinExamPage({
           <p className="subtitle">Join code: <strong>{code || "—"}</strong></p>
         </div>
         <JoinFlow code={code} />
-        <div style={{ marginTop: 12, textAlign: "center" }}>
-          <Link href="/login" className="muted" style={{ fontSize: 13, textDecoration: "underline" }}>
+        <div style={{ marginTop: 16, textAlign: "center" }}>
+          <Link href="/login" className="muted" style={{ fontSize: 14, textDecoration: "underline" }}>
             Teacher login
           </Link>
         </div>

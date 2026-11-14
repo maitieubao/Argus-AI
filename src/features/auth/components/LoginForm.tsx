@@ -53,6 +53,7 @@ export default function LoginForm({ nextPath }: Props) {
           id="email"
           name="email"
           type="text"
+          className="input"
           autoComplete="username"
           placeholder="teacher@example.com"
           value={email}
@@ -67,6 +68,7 @@ export default function LoginForm({ nextPath }: Props) {
           id="password"
           name="password"
           type="password"
+          className="input"
           autoComplete="current-password"
           placeholder="Enter password"
           value={password}
@@ -77,7 +79,7 @@ export default function LoginForm({ nextPath }: Props) {
 
       {error ? <div className="error-message" role="alert">{error}</div> : null}
 
-      <button type="submit" className="primary-btn" disabled={submitting}>
+      <button type="submit" className="button primary-btn" disabled={submitting}>
         {submitting ? "Signing in..." : "Sign in"}
       </button>
 

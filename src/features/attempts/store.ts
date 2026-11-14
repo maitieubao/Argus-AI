@@ -18,6 +18,17 @@ import type { EssayQuestionGrading, EssayResultSummary } from "@/features/essay-
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "attempts.json");
 
+let writeQueue: Promise<void> = Promise.resolve();
+
+function withAttemptStoreLock<T>(fn: () => Promise<T>): Promise<T> {
+  const prev = writeQueue;
+  let release!: () => void;
+  writeQueue = new Promise<void>((res) => {
+    release = res;
+  });
+  return prev.then(fn).finally(() => release());
+}
+
 async function ensureStore(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
@@ -276,21 +287,25 @@ export async function getAttemptById(id: string): Promise<Attempt | null> {
 }
 
 export async function createAttempt(attempt: Attempt): Promise<Attempt> {
-  const attempts = await readAll();
-  attempts.push(attempt);
-  await writeAll(attempts);
-  return attempt;
+  return withAttemptStoreLock(async () => {
+    const attempts = await readAll();
+    attempts.push(attempt);
+    await writeAll(attempts);
+    return attempt;
+  });
 }
 
 export async function replaceAttempt(updated: Attempt): Promise<void> {
-  const attempts = await readAll();
-  const idx = attempts.findIndex((a) => a.id === updated.id);
-  if (idx === -1) {
-    attempts.push(updated);
-  } else {
-    attempts[idx] = updated;
-  }
-  await writeAll(attempts);
+  return withAttemptStoreLock(async () => {
+    const attempts = await readAll();
+    const idx = attempts.findIndex((a) => a.id === updated.id);
+    if (idx === -1) {
+      attempts.push(updated);
+    } else {
+      attempts[idx] = updated;
+    }
+    await writeAll(attempts);
+  });
 }
 
 export async function getAllAttempts(): Promise<Attempt[]> {

@@ -4,7 +4,16 @@ import { getSession } from "@/features/auth/session";
 import { getExamById, formatDateTime } from "@/features/exams/store";
 import { getAttemptsByExamId } from "@/features/attempts/store";
 import { getProctoringSummaryForAttemptRecord } from "@/features/proctoring/service";
-import { getEventTypeLabel, isKnownEventType } from "@/features/proctoring/domain";
+import {
+  formatCameraCheckStatus,
+  formatDurationFriendly,
+  formatFacePresence,
+  formatGazeDirection,
+  formatHandsVisibility,
+  getEventTypeDescription,
+  getEventTypeTitle,
+  isKnownEventType,
+} from "@/features/proctoring/domain";
 
 export const metadata = {
   title: "Proctoring report | Argus AI",
@@ -39,18 +48,17 @@ export default async function ExamProctoringPage({ params }: { params: { id: str
     }),
   );
 
-  let examTotalEvents = 0;
   let examReviewedCount = 0;
   let examUnresolvedCount = 0;
   let examTotalMonitoredMs = 0;
   const examCountsByType: Record<string, number> = {};
 
   for (const { summary } of rows) {
-    examTotalEvents += summary.totalEvents;
     examReviewedCount += summary.reviewedCount;
     examUnresolvedCount += summary.unresolvedCount;
     examTotalMonitoredMs += summary.liveTelemetry?.totalMonitoringDurationMs ?? 0;
     for (const [t, c] of Object.entries(summary.countsByType)) {
+      if (t === "CAMERA_STATUS") continue;
       examCountsByType[t] = (examCountsByType[t] || 0) + c;
     }
   }
@@ -62,7 +70,7 @@ export default async function ExamProctoringPage({ params }: { params: { id: str
       <section className="content narrow">
         <div className="content-head">
           <div>
-            <h1>Proctoring: {exam.title}</h1>
+            <h1>Monitoring report: {exam.title}</h1>
             <p className="muted">
               Join code: <strong>{exam.joinCode ?? "—"}</strong>
             </p>
@@ -74,69 +82,89 @@ export default async function ExamProctoringPage({ params }: { params: { id: str
           </div>
         </div>
 
-        {/* Phase 5.3: Examination Summary Card */}
         <div className="card question-section">
-          <div className="question-section-head" style={{ marginBottom: 10 }}>
+          <div className="question-section-head">
             <div>
-              <h2>Examination Monitoring Summary</h2>
-              <p className="muted" style={{ fontSize: 13 }}>
-                Aggregated AI-Proctor and browser behavior signals across all candidates
+              <h2>Overview</h2>
+              <p className="muted">
+                Summary of candidate focus, tab switches, and camera checks across this exam.
               </p>
             </div>
           </div>
-          <div className="exam-info-block" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10, marginBottom: 12 }}>
-            <div>Total attempts: <strong>{rows.length}</strong></div>
-            <div>Total detected events: <strong>{examTotalEvents}</strong></div>
-            <div>Reviewed events: <strong>{examReviewedCount}</strong></div>
-            <div>Unresolved events: <strong>{examUnresolvedCount}</strong></div>
-            <div>Total AI monitoring time: <strong>{(examTotalMonitoredMs / 1000).toFixed(1)}s</strong></div>
+
+          <div className="stat-grid">
+            <div className="stat-card">
+              <span className="stat-label">Candidates</span>
+              <span className="stat-value">{rows.length}</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Items needing review</span>
+              <span className="stat-value">{examUnresolvedCount}</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Already reviewed</span>
+              <span className="stat-value">{examReviewedCount}</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-label">Total camera time</span>
+              <span className="stat-value">{formatDurationFriendly(examTotalMonitoredMs)}</span>
+            </div>
           </div>
+
           {groupedTypeEntries.length > 0 ? (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Behavior Type</th>
-                    <th>Description</th>
-                    <th>Total Count</th>
+                    <th>Activity</th>
+                    <th>What happened</th>
+                    <th>Times recorded</th>
                   </tr>
                 </thead>
                 <tbody>
                   {groupedTypeEntries.map(([type, count]) => (
                     <tr key={type}>
-                      <td data-label="Behavior Type"><code>{type}</code></td>
-                      <td data-label="Description">{isKnownEventType(type) ? getEventTypeLabel(type) : type}</td>
-                      <td data-label="Total Count"><strong>{count}</strong></td>
+                      <td data-label="Activity">
+                        <strong>{isKnownEventType(type) ? getEventTypeTitle(type) : type}</strong>
+                      </td>
+                      <td data-label="What happened" className="muted">
+                        {isKnownEventType(type) ? getEventTypeDescription(type) : "Recorded during the exam."}
+                      </td>
+                      <td data-label="Times recorded">
+                        <strong>{count}</strong>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          ) : null}
+          ) : (
+            <div className="empty-inline muted">No notable browser or camera alerts recorded yet.</div>
+          )}
         </div>
 
         <div className="card question-section">
-          <div className="question-section-head" style={{ marginBottom: 10 }}>
+          <div className="question-section-head">
             <div>
-              <h2>Candidate Monitoring History</h2>
-              <p className="muted" style={{ fontSize: 14, marginTop: 2 }}>
-                Total: <strong>{rows.length}</strong>
+              <h2>Candidates</h2>
+              <p className="muted">
+                Select &ldquo;View report&rdquo; to inspect photos, timeline, and review flags for a candidate.
               </p>
             </div>
           </div>
 
           {rows.length === 0 ? (
-            <div className="empty-state">No attempts for this exam yet.</div>
+            <div className="empty-state">No candidates have joined this exam yet.</div>
           ) : (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>Candidate</th>
-                    <th>Status</th>
-                    <th>Live AI Telemetry</th>
-                    <th>Signal level</th>
-                    <th>Events (Reviewed / Unresolved)</th>
+                    <th>Exam status</th>
+                    <th>Latest camera check</th>
+                    <th>Attention</th>
+                    <th>Items to review</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -147,40 +175,40 @@ export default async function ExamProctoringPage({ params }: { params: { id: str
                       <tr key={attempt.id}>
                         <td data-label="Candidate">
                           <strong>{attempt.candidate.fullName}</strong>
-                          <div className="muted" style={{ fontSize: 12 }}>
-                            Started: {formatDateTime(attempt.startedAt)}
+                          <div className="muted" style={{ fontSize: 13 }}>
+                            Started {formatDateTime(attempt.startedAt)}
                           </div>
                         </td>
-                        <td data-label="Status">{attemptStatusLabel(attempt.status, attempt.submitReason)}</td>
-                        <td data-label="Live AI Telemetry" style={{ fontSize: 13 }}>
+                        <td data-label="Exam status">{attemptStatusLabel(attempt.status, attempt.submitReason)}</td>
+                        <td data-label="Latest camera check" style={{ fontSize: 14 }}>
                           {live ? (
                             <div>
                               <div>
-                                Face: <strong>{live.cameraObstructed ? "Obstructed" : live.faceCount >= 2 ? `Multi (${live.faceCount})` : live.faceVisible ? "OK" : "Missing"}</strong> · Gaze: <strong>{live.eyeGazeDirection}</strong>
+                                <strong>{formatFacePresence(live)}</strong> · {formatGazeDirection(live.eyeGazeDirection)}
                               </div>
-                              <div className="muted" style={{ fontSize: 12 }}>
-                                Head: {live.headOrientation} · Hands L/R: {live.leftHandVisible ? "OK" : "—"}/{live.rightHandVisible ? "OK" : "—"}
+                              <div className="muted" style={{ fontSize: 13 }}>
+                                {formatHandsVisibility(live.leftHandVisible, live.rightHandVisible)}
                               </div>
                             </div>
                           ) : (
-                            <span className="muted">Camera check: {attempt.cameraCheck?.status ?? "not_checked"}</span>
+                            <span className="muted">Camera: {formatCameraCheckStatus(attempt.cameraCheck?.status)}</span>
                           )}
                         </td>
-                        <td data-label="Signal level">
+                        <td data-label="Attention">
                           <span className={`risk-badge ${levelClass(summary.warningLevel)}`}>
                             {summary.warningLabel}
                           </span>
                         </td>
-                        <td data-label="Events">
-                          <strong>{summary.totalEvents}</strong>{" "}
-                          <span className="muted" style={{ fontSize: 12 }}>
-                            ({summary.reviewedCount} reviewed / {summary.unresolvedCount} unresolved)
+                        <td data-label="Items to review">
+                          <strong>{summary.unresolvedCount}</strong>{" "}
+                          <span className="muted" style={{ fontSize: 13 }}>
+                            pending ({summary.reviewedCount} reviewed)
                           </span>
                         </td>
                         <td className="row-actions">
-                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
                             <Link href={`/exams/${exam.id}/grading/${attempt.id}`} className="secondary-btn link-btn small-btn">Grade</Link>
-                            <Link href={`/exams/${exam.id}/attempts/${attempt.id}`} className="secondary-btn link-btn small-btn">View details</Link>
+                            <Link href={`/exams/${exam.id}/attempts/${attempt.id}`} className="secondary-btn link-btn small-btn">View report</Link>
                           </div>
                         </td>
                       </tr>

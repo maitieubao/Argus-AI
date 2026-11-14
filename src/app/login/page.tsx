@@ -22,7 +22,7 @@ export default function LoginPage({
       : "/exams";
 
   return (
-    <main className="page-center">
+    <main className="hero">
       <div className="login-wrap">
         <div className="brand">
           <span className="brand-badge">Argus AI</span>

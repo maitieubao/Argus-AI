@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProctoringEvents, type DemoPostureMode } from "@/features/proctoring/client";
+import {
+  formatFacePresence,
+  formatGazeDirection,
+  formatHandsVisibility,
+  formatHeadOrientation,
+} from "@/features/proctoring/domain";
 
 type AttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "AUTO_SUBMITTED";
 
@@ -96,6 +102,7 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
   const dirtyRef = useRef<Set<string>>(new Set());
   const autoSubmittedRef = useRef(false);
   const inFlightSave = useRef<Promise<void> | null>(null);
+  const localAnswersRef = useRef<typeof localAnswers>({});
   const proctorVideoRef = useRef<HTMLVideoElement | null>(null);
   const proctorStreamRef = useRef<MediaStream | null>(null);
   const [cameraMonitoring, setCameraMonitoring] = useState(false);
@@ -107,6 +114,7 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
       if (a.type === "MCQ") map[a.questionId] = { type: "MCQ", selectedOptionId: a.selectedOptionId ?? null };
       else map[a.questionId] = { type: "ESSAY", text: a.text ?? "" };
     }
+    localAnswersRef.current = map;
     setLocalAnswers(map);
   }, []);
 
@@ -145,8 +153,12 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
     camera: { enabled: cameraMonitoring, getVideoEl: () => proctorVideoRef.current },
   });
 
+  const hasView = !!view;
+  const consentAccepted = !!view?.attempt.consentAcceptedAt;
+  const cameraCheckStatus = view?.attempt.cameraCheck?.status;
+
   useEffect(() => {
-    if (!view || isSubmitted) {
+    if (!hasView || isSubmitted) {
       setCameraMonitoring(false);
       if (proctorStreamRef.current) {
         proctorStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -154,8 +166,8 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
       }
       return;
     }
-    const consentOk = !!view.attempt.consentAcceptedAt;
-    const cameraStatus = view.attempt.cameraCheck?.status;
+    const consentOk = consentAccepted;
+    const cameraStatus = cameraCheckStatus;
     const canTry = consentOk && cameraStatus !== "denied" && cameraStatus !== "unavailable";
     if (!canTry) {
       setCameraMonitoring(false);
@@ -176,8 +188,26 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
         }
         proctorStreamRef.current = stream;
         if (proctorVideoRef.current) {
-          proctorVideoRef.current.srcObject = stream;
-          await proctorVideoRef.current.play().catch(() => {});
+          const videoEl = proctorVideoRef.current;
+          videoEl.srcObject = stream;
+          await videoEl.play().catch(() => {});
+          if (videoEl.videoWidth === 0) {
+            await new Promise<void>((resolve) => {
+              let settled = false;
+              const done = () => {
+                if (settled) return;
+                settled = true;
+                videoEl.removeEventListener("loadeddata", done);
+                resolve();
+              };
+              videoEl.addEventListener("loadeddata", done, { once: true });
+              setTimeout(done, 1200);
+            });
+          }
+        }
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
         }
         stream.getVideoTracks().forEach((track) => {
           track.addEventListener("ended", () => {
@@ -226,7 +256,7 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
         proctorStreamRef.current = null;
       }
     };
-  }, [attemptId, isSubmitted, view]);
+  }, [attemptId, isSubmitted, hasView, consentAccepted, cameraCheckStatus]);
 
   const questions = useMemo(() => view?.questions || [], [view]);
   const currentQ = questions[currentIdx];
@@ -242,21 +272,31 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
     return c;
   }, [questions, localAnswers]);
 
-  const flushSave = useCallback(async () => {
-    if (!view || isSubmitted) return;
-    if (dirtyRef.current.size === 0) return;
-    if (inFlightSave.current) return inFlightSave.current;
+  const dataExpiredRef = useRef(false);
+  useEffect(() => {
+    dataExpiredRef.current = isSubmitted;
+  }, [isSubmitted]);
 
+  const flushSave = useCallback(async () => {
+    if (!hasView || isSubmitted) return;
+    if (inFlightSave.current) {
+      await inFlightSave.current;
+    }
+    if (dirtyRef.current.size === 0) return;
+
+    const snapshot = new Map<string, (typeof localAnswers)[string]>();
     const ids = Array.from(dirtyRef.current);
     const payload = ids.map((qid) => {
-      const a = localAnswers[qid];
+      const a = localAnswersRef.current[qid];
       if (!a) return null;
-      if (a.type === "MCQ") return { questionId: qid, type: "MCQ", selectedOptionId: a.selectedOptionId };
-      return { questionId: qid, type: "ESSAY", text: a.text };
-    }).filter(Boolean);
+      snapshot.set(qid, a);
+      if (a.type === "MCQ") return { questionId: qid, type: "MCQ" as const, selectedOptionId: a.selectedOptionId };
+      return { questionId: qid, type: "ESSAY" as const, text: a.text };
+    }).filter((x): x is NonNullable<typeof x> => x !== null);
 
     if (payload.length === 0) return;
 
+    let savedOk = false;
     const run = (async () => {
       setSaveState("saving");
       setSaveMsg("Saving…");
@@ -269,18 +309,27 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (data?.code === "ALREADY_SUBMITTED") {
-            await load();
             dirtyRef.current.clear();
+            await load();
             return;
           }
           setSaveState("error");
           setSaveMsg(data?.errors?.form || "Could not save. Please try again.");
           return;
         }
-        ids.forEach((id) => dirtyRef.current.delete(id));
+        for (const id of ids) {
+          const sent = snapshot.get(id);
+          const latest = localAnswersRef.current[id];
+          if (sent && latest && JSON.stringify(sent) === JSON.stringify(latest)) {
+            dirtyRef.current.delete(id);
+          }
+        }
+        savedOk = true;
         setSaveState("saved");
         setSaveMsg(data?.expired ? "Time expired. Your exam was submitted." : "Saved");
-        if (data?.view) applyView(data.view as AttemptView);
+        if (data?.expired && data?.view) {
+          applyView(data.view as AttemptView);
+        }
       } catch {
         setSaveState("error");
         setSaveMsg("Network error while saving. Please try again.");
@@ -289,13 +338,23 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
       }
     })();
     inFlightSave.current = run;
-    return run;
-  }, [attemptId, isSubmitted, load, localAnswers, view, applyView]);
+    await run;
+
+    if (savedOk && dirtyRef.current.size > 0 && !dataExpiredRef.current) {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => { void flushSaveRef.current(); }, 400);
+    }
+  }, [attemptId, hasView, isSubmitted, load, applyView]);
+
+  const flushSaveRef = useRef(flushSave);
+  useEffect(() => {
+    flushSaveRef.current = flushSave;
+  }, [flushSave]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => { void flushSave(); }, 700);
-  }, [flushSave]);
+    saveTimer.current = setTimeout(() => { void flushSaveRef.current(); }, 700);
+  }, []);
 
   useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
 
@@ -306,14 +365,18 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
 
   function setMcqAnswer(questionId: string, selectedOptionId: string) {
     if (isSubmitted) return;
-    setLocalAnswers((prev) => ({ ...prev, [questionId]: { type: "MCQ", selectedOptionId } }));
-    setTimeout(() => markDirty(questionId), 0);
+    const next = { ...localAnswersRef.current, [questionId]: { type: "MCQ" as const, selectedOptionId } };
+    localAnswersRef.current = next;
+    setLocalAnswers(next);
+    markDirty(questionId);
   }
 
   function setEssayAnswer(questionId: string, text: string) {
     if (isSubmitted) return;
-    setLocalAnswers((prev) => ({ ...prev, [questionId]: { type: "ESSAY", text } }));
-    setTimeout(() => markDirty(questionId), 0);
+    const next = { ...localAnswersRef.current, [questionId]: { type: "ESSAY" as const, text } };
+    localAnswersRef.current = next;
+    setLocalAnswers(next);
+    markDirty(questionId);
   }
 
   async function doSubmit(reason: "MANUAL" | "TIMEOUT") {
@@ -603,27 +666,27 @@ export default function AttemptRunner({ attemptId }: { attemptId: string }) {
 
           <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border)", fontSize: 13 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <strong>AI Proctor</strong>
+              <strong>Monitoring</strong>
               <span className="pill" style={{ fontSize: 11 }}>
-                {cameraMonitoring ? "Camera Active" : "Browser Signals"}
+                {cameraMonitoring ? "Camera active" : "Browser only"}
               </span>
             </div>
             {proctoring.liveSnapshot ? (
-              <div className="muted" style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 6 }}>
+              <div className="muted" style={{ fontSize: 12, lineHeight: 1.6, marginBottom: 6 }}>
                 <div>
-                  Face: <strong>{proctoring.liveSnapshot.cameraObstructed ? "Obstructed" : proctoring.liveSnapshot.faceCount >= 2 ? `Multiple (${proctoring.liveSnapshot.faceCount})` : proctoring.liveSnapshot.faceVisible ? "Visible" : "Missing"}</strong>
+                  Presence: <strong>{formatFacePresence(proctoring.liveSnapshot)}</strong>
                 </div>
                 <div>
-                  Gaze: <strong>{proctoring.liveSnapshot.eyeGazeDirection}</strong> · Head: <strong>{proctoring.liveSnapshot.headOrientation}</strong>
+                  Focus: <strong>{formatGazeDirection(proctoring.liveSnapshot.eyeGazeDirection)}</strong> · {formatHeadOrientation(proctoring.liveSnapshot.headOrientation)}
                 </div>
                 <div>
-                  Hands (L/R): <strong>{proctoring.liveSnapshot.leftHandVisible ? "OK" : "—"} / {proctoring.liveSnapshot.rightHandVisible ? "OK" : "—"}</strong>
+                  Hands: <strong>{formatHandsVisibility(proctoring.liveSnapshot.leftHandVisible, proctoring.liveSnapshot.rightHandVisible)}</strong>
                 </div>
               </div>
             ) : null}
             {proctoring.lastDetectedBanner ? (
-              <div style={{ fontSize: 12, marginBottom: 6, padding: "4px 6px", background: "var(--bg-soft)", border: "1px solid var(--border)" }}>
-                Last signal: <strong>{proctoring.lastDetectedBanner}</strong>
+              <div style={{ fontSize: 12, marginBottom: 6, padding: "6px 8px", borderRadius: 6, background: "var(--bg-soft)", border: "1px solid var(--border)" }}>
+                Notice: <strong>{proctoring.lastDetectedBanner}</strong>
               </div>
             ) : null}
             <details style={{ marginTop: 6 }}>

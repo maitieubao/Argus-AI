@@ -204,7 +204,7 @@ export default function JoinFlow({ code }: { code: string }) {
     return (
       <div className="card login-form">
         <div className="error-message" role="alert">{fetchError || "Something went wrong."}</div>
-        <button type="button" className="primary-btn" onClick={load}>Try again</button>
+        <button type="button" className="button primary-btn" onClick={load}>Try again</button>
       </div>
     );
   }
@@ -252,19 +252,20 @@ export default function JoinFlow({ code }: { code: string }) {
     <div className="card login-form join-card">
       {exam ? (
         <div className="exam-info-block">
-          <h2 style={{ fontSize: 18, marginBottom: 4, color: "var(--nb-black)" }}>{exam.title}</h2>
+          <h2 style={{ fontSize: 18, marginBottom: 4, color: "var(--color-ink)" }}>{exam.title}</h2>
           <div className="muted">Duration: <strong>{exam.durationMinutes} min</strong> · Questions: <strong>{exam.questionCount}</strong></div>
           <div className="muted">Opens: <strong>{fmt(exam.openAt)}</strong> · Closes: <strong>{fmt(exam.closeAt)}</strong></div>
         </div>
       ) : null}
 
       {step === "info" ? (
-        <form onSubmit={goToCheckin} noValidate>
+        <form onSubmit={goToCheckin} noValidate style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div className="field">
             <label htmlFor="fullName">Full name <span aria-hidden="true">*</span></label>
             <input
               id="fullName"
               type="text"
+              className="input"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Enter your full name"
@@ -273,7 +274,7 @@ export default function JoinFlow({ code }: { code: string }) {
             />
             {identityError ? <div className="field-error">{identityError}</div> : null}
           </div>
-          <button type="submit" className="primary-btn" style={{ marginTop: 8 }}>
+          <button type="submit" className="button primary-btn">
             Continue
           </button>
         </form>
@@ -328,7 +329,7 @@ export default function JoinFlow({ code }: { code: string }) {
 
           <div className="form-actions" style={{ justifyContent: "space-between" }}>
             <button type="button" className="secondary-btn" onClick={() => setStep("info")} disabled={starting}>Back</button>
-            <button type="button" className="primary-btn" onClick={startExam} disabled={starting || !consent}>
+            <button type="button" className="button primary-btn" onClick={startExam} disabled={starting || !consent}>
               {starting ? "Starting…" : "Start exam"}
             </button>
           </div>

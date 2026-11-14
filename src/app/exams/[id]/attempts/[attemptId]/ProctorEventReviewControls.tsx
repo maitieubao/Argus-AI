@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ProctoringReviewStatus } from "@/features/proctoring/domain";
+import { formatReviewStatusLabel, type ProctoringReviewStatus } from "@/features/proctoring/domain";
 
 export default function ProctorEventReviewControls({
   examId,
@@ -44,30 +44,30 @@ export default function ProctorEventReviewControls({
     <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <span
         className={`status-badge ${status === "RESOLVED" ? "published" : "draft"}`}
-        style={{ fontSize: 11 }}
+        style={{ fontSize: 12 }}
       >
-        {status}
+        {formatReviewStatusLabel(status)}
       </span>
       {status === "DETECTED" ? (
         <button
           type="button"
           className="secondary-btn small-btn"
-          style={{ fontSize: 11, padding: "2px 8px" }}
+          style={{ fontSize: 12, padding: "4px 10px" }}
           disabled={busy}
           onClick={() => void updateStatus("CONFIRMED")}
         >
-          Confirm
+          Flag issue
         </button>
       ) : null}
       {status !== "RESOLVED" ? (
         <button
           type="button"
           className="secondary-btn small-btn"
-          style={{ fontSize: 11, padding: "2px 8px" }}
+          style={{ fontSize: 12, padding: "4px 10px" }}
           disabled={busy}
           onClick={() => void updateStatus("RESOLVED")}
         >
-          Resolve
+          Clear
         </button>
       ) : null}
     </div>
